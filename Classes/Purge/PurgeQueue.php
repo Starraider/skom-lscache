@@ -7,6 +7,11 @@ namespace Skom\Lscache\Purge;
 final class PurgeQueue
 {
     /**
+     * @var array<string, string>
+     */
+    private array $fullSiteFlushNamespaces = [];
+
+    /**
      * @var list<string>
      */
     private array $tags = [];
@@ -20,6 +25,10 @@ final class PurgeQueue
      * @var list<string>
      */
     private array $fullSiteFlushes = [];
+
+    public function __construct(
+        private readonly TagNamespaceResolverInterface $tagNamespaceResolver,
+    ) {}
 
     /**
      * @param list<string> $tags
@@ -47,11 +56,14 @@ final class PurgeQueue
             return;
         }
 
+        $tagNamespace = $this->tagNamespaceResolver->resolveForSite($siteIdentifier);
+
         $this->fullSiteFlushes[] = $siteIdentifier;
         $this->fullSiteFlushes = array_values(array_unique($this->fullSiteFlushes));
+        $this->fullSiteFlushNamespaces[$siteIdentifier] = $tagNamespace;
         $this->tags = array_values(array_filter(
             $this->tags,
-            static fn (string $tag): bool => !str_starts_with($tag, $siteIdentifier . '_'),
+            fn (string $tag): bool => !$this->tagMatchesNamespace($tag, $tagNamespace),
         ));
     }
 
@@ -76,19 +88,25 @@ final class PurgeQueue
         $this->tags = [];
         $this->urls = [];
         $this->fullSiteFlushes = [];
+        $this->fullSiteFlushNamespaces = [];
 
         return $payload;
     }
 
     private function tagIsCoveredByAnyFullSiteFlush(string $tag): bool
     {
-        foreach ($this->fullSiteFlushes as $siteIdentifier) {
-            if (str_starts_with($tag, $siteIdentifier . '_')) {
+        foreach ($this->fullSiteFlushNamespaces as $tagNamespace) {
+            if ($this->tagMatchesNamespace($tag, $tagNamespace)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function tagMatchesNamespace(string $tag, string $tagNamespace): bool
+    {
+        return $tagNamespace !== '' && str_starts_with($tag, $tagNamespace . '_');
     }
 
     private function isAbsoluteUrl(string $url): bool

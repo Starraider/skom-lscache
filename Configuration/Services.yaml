@@ -7,6 +7,8 @@ services:
   Skom\Lscache\:
     resource: '../Classes/*'
 
+  Skom\Lscache\Purge\TagNamespaceResolverInterface: '@Skom\Lscache\Purge\SiteTagNamespaceResolver'
+
   # Must stay shared inside one request so all collaborators see the same queue instance.
   # Request isolation is provided by TYPO3/PHP request lifecycle (no static state).
   Skom\Lscache\Purge\PurgeQueue:
