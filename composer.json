@@ -1,0 +1,37 @@
+{
+	"name": "skom/lscache",
+	"description": "LiteSpeed Cache integration for TYPO3 — emits per-response LSCache tag headers and orchestrates tag-targeted purges.",
+	"license": "GPL-2.0-or-later",
+	"type": "typo3-cms-extension",
+	"version": "1.0.0",
+	"authors": [
+		{
+			"name": "Sven Kalbhenn",
+			"email": "sven@skom.de",
+			"homepage": "https://www.skom.de/",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": "^8.2",
+		"typo3/cms-core": "^14.3"
+	},
+	"autoload": {
+		"psr-4": {
+			"Skom\\Lscache\\": "Classes/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Skom\\Lscache\\Tests\\": "Tests/"
+		}
+	},
+	"extra": {
+		"typo3/cms": {
+			"Package": {
+				"providesPackages": {}
+			},
+			"extension-key": "skom_lscache"
+		}
+	}
+}

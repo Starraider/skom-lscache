@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" role="img">
+    <title>LiteSpeed Cache extension</title>
+    <rect x="2" y="2" width="60" height="60" rx="6" ry="6" fill="#0a84ff"/>
+    <path d="M20 14h16l-6 14h12L24 50l4-18H18z" fill="#ffffff"/>
+</svg>
