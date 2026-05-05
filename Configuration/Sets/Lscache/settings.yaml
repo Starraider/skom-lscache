@@ -1,1 +1,25 @@
-lscache: {}
+lscache:
+  enabled: true
+  defaultTtl: 3600
+  tagNamespace: ''
+  autopurge:
+    dataHandler: true
+    tables: []
+  mirror:
+    cacheFlushEvent: false
+  bypass:
+    loggedInFE: true
+    setCookie: true
+    paths: []
+    pluginSignatures: []
+    ctypes: []
+  vary:
+    cookieAllowlist: []
+  loopback:
+    secret: ''
+    rateLimit: 120
+    allowedRemoteAddrs:
+      - '127.0.0.1'
+      - '::1'
+  audit:
+    retentionDays: 7

@@ -2,6 +2,47 @@
 <xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
     <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-05-05" product-name="skom_lscache">
         <header/>
-        <body/>
+        <body>
+            <trans-unit id="settings.category.lscache"><source>LSCache</source><target>LSCache</target></trans-unit>
+            <trans-unit id="settings.category.lscache.autopurge"><source>Autopurge</source><target>Auto-Purge</target></trans-unit>
+            <trans-unit id="settings.category.lscache.mirror"><source>Mirror</source><target>Spiegelung</target></trans-unit>
+            <trans-unit id="settings.category.lscache.bypass"><source>Bypass</source><target>Bypass</target></trans-unit>
+            <trans-unit id="settings.category.lscache.vary"><source>Vary</source><target>Variantenbildung</target></trans-unit>
+            <trans-unit id="settings.category.lscache.loopback"><source>Loopback</source><target>Loopback</target></trans-unit>
+            <trans-unit id="settings.category.lscache.audit"><source>Audit</source><target>Audit</target></trans-unit>
+
+            <trans-unit id="settings.lscache.enabled.label"><source>Enable LSCache integration</source><target>LSCache-Integration aktivieren</target></trans-unit>
+            <trans-unit id="settings.lscache.enabled.description"><source>Globally enables LSCache header emission and behavior for this site.</source><target>Aktiviert die LSCache-Header-Ausgabe und das Verhalten global für diese Site.</target></trans-unit>
+            <trans-unit id="settings.lscache.defaultTtl.label"><source>Default TTL (seconds)</source><target>Standard-TTL (Sekunden)</target></trans-unit>
+            <trans-unit id="settings.lscache.defaultTtl.description"><source>Default cache lifetime in seconds. Must be greater than 0.</source><target>Standard-Cache-Lebensdauer in Sekunden. Muss größer als 0 sein.</target></trans-unit>
+            <trans-unit id="settings.lscache.tagNamespace.label"><source>Tag namespace</source><target>Tag-Namespace</target></trans-unit>
+            <trans-unit id="settings.lscache.tagNamespace.description"><source>Namespace prefix used for generated cache tags.</source><target>Namespace-Präfix für generierte Cache-Tags.</target></trans-unit>
+            <trans-unit id="settings.lscache.autopurge.dataHandler.label"><source>Enable DataHandler autopurge</source><target>DataHandler-Auto-Purge aktivieren</target></trans-unit>
+            <trans-unit id="settings.lscache.autopurge.dataHandler.description"><source>Automatically queue purge targets on TYPO3 DataHandler operations.</source><target>Erzeugt automatisch Purge-Ziele bei TYPO3-DataHandler-Operationen.</target></trans-unit>
+            <trans-unit id="settings.lscache.autopurge.tables.label"><source>Autopurge table allowlist</source><target>Auto-Purge Tabellen-Allowlist</target></trans-unit>
+            <trans-unit id="settings.lscache.autopurge.tables.description"><source>Optional list of database tables that may trigger automatic purges.</source><target>Optionale Liste von Datenbanktabellen, die automatische Purges auslösen dürfen.</target></trans-unit>
+            <trans-unit id="settings.lscache.mirror.cacheFlushEvent.label"><source>Mirror CacheFlushEvent</source><target>CacheFlushEvent spiegeln</target></trans-unit>
+            <trans-unit id="settings.lscache.mirror.cacheFlushEvent.description"><source>Mirror TYPO3 CacheFlushEvent to LSCache purge endpoint.</source><target>Spiegelt TYPO3 CacheFlushEvent auf den LSCache-Purge-Endpunkt.</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.loggedInFE.label"><source>Bypass for logged-in frontend users</source><target>Bypass für angemeldete Frontend-Benutzer</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.loggedInFE.description"><source>Disable cache behavior for authenticated frontend users.</source><target>Deaktiviert Cache-Verhalten für authentifizierte Frontend-Benutzer.</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.setCookie.label"><source>Bypass when Set-Cookie is present</source><target>Bypass bei Set-Cookie</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.setCookie.description"><source>Bypass LSCache whenever the response sets cookies.</source><target>Bypass für LSCache, sobald die Antwort Cookies setzt.</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.paths.label"><source>Bypass path prefixes</source><target>Bypass-Pfadpräfixe</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.paths.description"><source>Request path prefixes that should bypass LSCache.</source><target>Anfragepfad-Präfixe, die LSCache umgehen sollen.</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.pluginSignatures.label"><source>Bypass plugin signatures</source><target>Bypass-Plugin-Signaturen</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.pluginSignatures.description"><source>Plugin signatures for content rendering that should bypass LSCache.</source><target>Plugin-Signaturen für Content-Rendering, die LSCache umgehen sollen.</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.ctypes.label"><source>Bypass content types</source><target>Bypass-Content-Typen</target></trans-unit>
+            <trans-unit id="settings.lscache.bypass.ctypes.description"><source>Content element CType values that should bypass LSCache.</source><target>CType-Werte von Inhaltselementen, die LSCache umgehen sollen.</target></trans-unit>
+            <trans-unit id="settings.lscache.vary.cookieAllowlist.label"><source>Vary cookie allowlist</source><target>Vary-Cookie-Allowlist</target></trans-unit>
+            <trans-unit id="settings.lscache.vary.cookieAllowlist.description"><source>Cookie names that are allowed to contribute to cache variation.</source><target>Cookie-Namen, die zur Cache-Variantenbildung beitragen dürfen.</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.secret.label"><source>Loopback secret</source><target>Loopback-Secret</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.secret.description"><source>Shared secret for signed loopback purge requests.</source><target>Gemeinsames Secret für signierte Loopback-Purge-Anfragen.</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.rateLimit.label"><source>Loopback rate limit</source><target>Loopback-Rate-Limit</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.rateLimit.description"><source>Maximum loopback purge requests per minute. Must be greater than 0.</source><target>Maximale Loopback-Purge-Anfragen pro Minute. Muss größer als 0 sein.</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.allowedRemoteAddrs.label"><source>Allowed loopback remote addresses</source><target>Erlaubte Loopback-Remote-Adressen</target></trans-unit>
+            <trans-unit id="settings.lscache.loopback.allowedRemoteAddrs.description"><source>IP addresses allowed to call loopback purge endpoints.</source><target>IP-Adressen, die Loopback-Purge-Endpunkte aufrufen dürfen.</target></trans-unit>
+            <trans-unit id="settings.lscache.audit.retentionDays.label"><source>Audit retention days</source><target>Audit-Aufbewahrungstage</target></trans-unit>
+            <trans-unit id="settings.lscache.audit.retentionDays.description"><source>Retention period in days for LSCache audit log records.</source><target>Aufbewahrungszeitraum in Tagen für LSCache-Audit-Logeinträge.</target></trans-unit>
+        </body>
     </file>
 </xliff>

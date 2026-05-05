@@ -1,1 +1,121 @@
-settings: []
+categories:
+  lscache:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache'
+  lscache.autopurge:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.autopurge'
+    parent: lscache
+  lscache.mirror:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.mirror'
+    parent: lscache
+  lscache.bypass:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.bypass'
+    parent: lscache
+  lscache.vary:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.vary'
+    parent: lscache
+  lscache.loopback:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.loopback'
+    parent: lscache
+  lscache.audit:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.audit'
+    parent: lscache
+
+settings:
+  lscache.enabled:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.enabled.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.enabled.description'
+    category: lscache
+    type: bool
+    default: true
+  lscache.defaultTtl:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.defaultTtl.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.defaultTtl.description'
+    category: lscache
+    type: int
+    default: 3600
+  lscache.tagNamespace:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.tagNamespace.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.tagNamespace.description'
+    category: lscache
+    type: string
+    default: ''
+  lscache.autopurge.dataHandler:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.autopurge.dataHandler.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.autopurge.dataHandler.description'
+    category: lscache.autopurge
+    type: bool
+    default: true
+  lscache.autopurge.tables:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.autopurge.tables.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.autopurge.tables.description'
+    category: lscache.autopurge
+    type: stringlist
+    default: []
+  lscache.mirror.cacheFlushEvent:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.mirror.cacheFlushEvent.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.mirror.cacheFlushEvent.description'
+    category: lscache.mirror
+    type: bool
+    default: false
+  lscache.bypass.loggedInFE:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.loggedInFE.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.loggedInFE.description'
+    category: lscache.bypass
+    type: bool
+    default: true
+  lscache.bypass.setCookie:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.setCookie.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.setCookie.description'
+    category: lscache.bypass
+    type: bool
+    default: true
+  lscache.bypass.paths:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.paths.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.paths.description'
+    category: lscache.bypass
+    type: stringlist
+    default: []
+  lscache.bypass.pluginSignatures:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.pluginSignatures.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.pluginSignatures.description'
+    category: lscache.bypass
+    type: stringlist
+    default: []
+  lscache.bypass.ctypes:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.ctypes.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.bypass.ctypes.description'
+    category: lscache.bypass
+    type: stringlist
+    default: []
+  lscache.vary.cookieAllowlist:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.vary.cookieAllowlist.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.vary.cookieAllowlist.description'
+    category: lscache.vary
+    type: stringlist
+    default: []
+  lscache.loopback.secret:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.secret.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.secret.description'
+    category: lscache.loopback
+    type: string
+    default: ''
+  lscache.loopback.rateLimit:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.rateLimit.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.rateLimit.description'
+    category: lscache.loopback
+    type: int
+    default: 120
+  lscache.loopback.allowedRemoteAddrs:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.allowedRemoteAddrs.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.allowedRemoteAddrs.description'
+    category: lscache.loopback
+    type: stringlist
+    default:
+      - '127.0.0.1'
+      - '::1'
+  lscache.audit.retentionDays:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.audit.retentionDays.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.audit.retentionDays.description'
+    category: lscache.audit
+    type: int
+    default: 7
