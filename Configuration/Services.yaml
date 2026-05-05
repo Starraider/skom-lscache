@@ -6,3 +6,9 @@ services:
 
   Skom\Lscache\:
     resource: '../Classes/*'
+
+  Skom\Lscache\Http\PageContentInventoryProvider: '@Skom\Lscache\Http\DbalPageContentInventoryProvider'
+
+  skom.lscache.cacheability_classifier:
+    alias: Skom\Lscache\Http\CacheabilityClassifier
+    public: true
