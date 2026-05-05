@@ -7,6 +7,15 @@ services:
   Skom\Lscache\:
     resource: '../Classes/*'
 
+  # Must stay shared inside one request so all collaborators see the same queue instance.
+  # Request isolation is provided by TYPO3/PHP request lifecycle (no static state).
+  Skom\Lscache\Purge\PurgeQueue:
+    shared: true
+
+  skom.lscache.purge_queue:
+    alias: Skom\Lscache\Purge\PurgeQueue
+    public: true
+
   Skom\Lscache\Http\PageContentInventoryProvider: '@Skom\Lscache\Http\DbalPageContentInventoryProvider'
 
   Skom\Lscache\Http\CacheabilityClassifierInterface: '@Skom\Lscache\Http\CacheabilityClassifier'

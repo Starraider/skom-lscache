@@ -74,6 +74,25 @@ final class SkomLscacheMiddlewareTest extends TestCase
     }
 
     #[Test]
+    public function invalidCookieTokensAreFilteredFromVaryHeader(): void
+    {
+        $middleware = $this->createMiddleware(new CountingClassifier(CacheabilityDecision::cacheable()));
+
+        $response = $middleware->process(
+            $this->createRequest([
+                'lscache' => [
+                    'defaultTtl' => 900,
+                    'tagNamespace' => 'siteA',
+                    'vary' => ['cookieAllowlist' => ['fe_typo_user', 'bad,cookie', 'bad cookie', 'ctl()', 'preview']],
+                ],
+            ]),
+            new FixedResponseHandler(new Response()),
+        );
+
+        self::assertSame('cookie=fe_typo_user,cookie=preview', $response->getHeaderLine('X-LiteSpeed-Vary'));
+    }
+
+    #[Test]
     public function setCookieResponseUsesClassifierPathAndBecomesPrivate(): void
     {
         $classifier = new CountingClassifier(CacheabilityDecision::bypass(\Skom\Lscache\Http\BypassReason::RESPONSE_SET_COOKIE));

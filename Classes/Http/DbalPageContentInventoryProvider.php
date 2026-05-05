@@ -87,10 +87,19 @@ final readonly class DbalPageContentInventoryProvider implements PageContentInve
      */
     private function tableHasColumn(string $tableName, string $columnName): bool
     {
+        /** @var array<string, array<string, bool>> $columnPresenceCache */
+        static $columnPresenceCache = [];
+        if (isset($columnPresenceCache[$tableName][$columnName])) {
+            return $columnPresenceCache[$tableName][$columnName];
+        }
+
         $connection = $this->connectionPool->getConnectionForTable($tableName);
         $columns = $connection->createSchemaManager()->listTableColumns($tableName);
 
-        return array_key_exists($columnName, $columns);
+        $hasColumn = array_key_exists($columnName, $columns);
+        $columnPresenceCache[$tableName][$columnName] = $hasColumn;
+
+        return $hasColumn;
     }
 
     /**

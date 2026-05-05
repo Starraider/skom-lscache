@@ -14,6 +14,7 @@ use TYPO3\CMS\Core\Log\Channel;
 class OpenLiteSpeedDetector
 {
     private static bool $nonOlsNoticeLogged = false;
+    private const string APCU_NOTICE_KEY = 'skom_lscache_non_ols_notice_logged';
 
     /**
      * @param LoggerInterface $logger Channel logger used for non-OLS degradation notices.
@@ -43,7 +44,11 @@ class OpenLiteSpeedDetector
      */
     public function logGracefulDegradationIfMissing(ServerRequestInterface $request): void
     {
-        if ($this->isOpenLiteSpeed($request) || self::$nonOlsNoticeLogged) {
+        if ($this->isOpenLiteSpeed($request)) {
+            return;
+        }
+
+        if (self::$nonOlsNoticeLogged || !$this->markNoticeAsFirstOccurrence()) {
             return;
         }
 
@@ -59,5 +64,35 @@ class OpenLiteSpeedDetector
     public static function resetNoticeForTests(): void
     {
         self::$nonOlsNoticeLogged = false;
+
+        if (function_exists('apcu_delete')) {
+            apcu_delete(self::APCU_NOTICE_KEY);
+        }
+    }
+
+    private function markNoticeAsFirstOccurrence(): bool
+    {
+        if (!$this->isApcuUsable()) {
+            return true;
+        }
+
+        return apcu_add(self::APCU_NOTICE_KEY, true);
+    }
+
+    private function isApcuUsable(): bool
+    {
+        if (!function_exists('apcu_add')) {
+            return false;
+        }
+
+        if (!(bool)ini_get('apc.enabled')) {
+            return false;
+        }
+
+        if (PHP_SAPI === 'cli' && !(bool)ini_get('apc.enable_cli')) {
+            return false;
+        }
+
+        return true;
     }
 }

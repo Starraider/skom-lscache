@@ -153,7 +153,7 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
         $cookies = [];
         foreach ($allowlist as $cookie) {
             $cookie = trim((string)$cookie);
-            if ($cookie !== '') {
+            if ($cookie !== '' && $this->isValidHeaderToken($cookie)) {
                 $cookies[] = $cookie;
             }
         }
@@ -184,5 +184,15 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
         }
 
         return $nested;
+    }
+
+    /**
+     * Validates one RFC 7230 header token.
+     *
+     * @param string $token Candidate token value.
+     */
+    private function isValidHeaderToken(string $token): bool
+    {
+        return preg_match('/^[!#$%&\'*+.^_`|~0-9A-Za-z-]+$/', $token) === 1;
     }
 }
