@@ -11,18 +11,30 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Routing\PageArguments;
 
+/**
+ * Loads page content metadata from TYPO3 database tables for cacheability checks.
+ */
 final readonly class DbalPageContentInventoryProvider implements PageContentInventoryProvider
 {
+    /**
+     * @param ConnectionPool $connectionPool TYPO3 database connection factory.
+     * @param Context $context TYPO3 context used by frontend visibility restrictions.
+     */
     public function __construct(
         private ConnectionPool $connectionPool,
         private Context $context,
     ) {}
 
+    /**
+     * Resolves visible page content inventory for the page represented by the request.
+     *
+     * @param ServerRequestInterface $request Current PSR-7 request with a `routing` PageArguments attribute.
+     */
     public function getForRequest(ServerRequestInterface $request): PageContentInventory
     {
         $routing = $request->getAttribute('routing');
         if (!$routing instanceof PageArguments) {
-            return PageContentInventory::empty();
+            throw MissingRequestContext::forAttribute('routing');
         }
 
         $pid = $this->resolveContentPid($routing->getPageId());
@@ -34,8 +46,13 @@ final readonly class DbalPageContentInventoryProvider implements PageContentInve
         $queryBuilder->getRestrictions()->removeAll();
         $queryBuilder->getRestrictions()->add(new FrontendRestrictionContainer($this->context));
 
+        $selectFields = ['CType'];
+        if ($this->tableHasColumn('tt_content', 'list_type')) {
+            $selectFields[] = 'list_type';
+        }
+
         $rows = $queryBuilder
-            ->select('CType', 'list_type')
+            ->select(...$selectFields)
             ->from('tt_content')
             ->where(
                 $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pid, ParameterType::INTEGER)),
@@ -62,6 +79,25 @@ final readonly class DbalPageContentInventoryProvider implements PageContentInve
         );
     }
 
+    /**
+     * Checks whether a database table exposes a column in the current TYPO3 schema.
+     *
+     * @param string $tableName Database table name to inspect.
+     * @param string $columnName Column name to look up.
+     */
+    private function tableHasColumn(string $tableName, string $columnName): bool
+    {
+        $connection = $this->connectionPool->getConnectionForTable($tableName);
+        $columns = $connection->createSchemaManager()->listTableColumns($tableName);
+
+        return array_key_exists($columnName, $columns);
+    }
+
+    /**
+     * Resolves the page UID that should provide content for the current page.
+     *
+     * @param int $pageId Routed page UID.
+     */
     private function resolveContentPid(int $pageId): int
     {
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');

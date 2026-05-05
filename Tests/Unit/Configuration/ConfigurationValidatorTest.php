@@ -79,6 +79,67 @@ final class ConfigurationValidatorTest extends TestCase
     }
 
     #[Test]
+    public function throwsIfTagNamespaceIsAlreadyUsedByAnotherSite(): void
+    {
+        $this->subject->__invoke(new SiteConfigurationLoadedEvent('main', [
+            'settings' => [
+                'lscache' => [
+                    'defaultTtl' => 3600,
+                    'tagNamespace' => 'shared',
+                    'mirror' => ['cacheFlushEvent' => false],
+                    'loopback' => ['rateLimit' => 120, 'secret' => ''],
+                ],
+            ],
+        ]));
+
+        $this->expectException(InvalidSiteSettingException::class);
+        $this->expectExceptionMessage('lscache.tagNamespace');
+        $this->expectExceptionMessage('shared');
+        $this->expectExceptionMessage('main');
+
+        $this->subject->__invoke(new SiteConfigurationLoadedEvent('second', [
+            'settings' => [
+                'lscache' => [
+                    'defaultTtl' => 3600,
+                    'tagNamespace' => 'shared',
+                    'mirror' => ['cacheFlushEvent' => false],
+                    'loopback' => ['rateLimit' => 120, 'secret' => ''],
+                ],
+            ],
+        ]));
+    }
+
+    #[Test]
+    public function throwsIfDerivedSiteIdentifierNamespaceCollidesWithExistingSite(): void
+    {
+        $this->subject->__invoke(new SiteConfigurationLoadedEvent('main', [
+            'settings' => [
+                'lscache' => [
+                    'defaultTtl' => 3600,
+                    'tagNamespace' => '',
+                    'mirror' => ['cacheFlushEvent' => false],
+                    'loopback' => ['rateLimit' => 120, 'secret' => ''],
+                ],
+            ],
+        ]));
+
+        $this->expectException(InvalidSiteSettingException::class);
+        $this->expectExceptionMessage('lscache.tagNamespace');
+        $this->expectExceptionMessage('main');
+
+        $this->subject->__invoke(new SiteConfigurationLoadedEvent('second', [
+            'settings' => [
+                'lscache' => [
+                    'defaultTtl' => 3600,
+                    'tagNamespace' => 'main',
+                    'mirror' => ['cacheFlushEvent' => false],
+                    'loopback' => ['rateLimit' => 120, 'secret' => ''],
+                ],
+            ],
+        ]));
+    }
+
+    #[Test]
     public function throwsForNonPositiveLoopbackRateLimit(): void
     {
         $this->expectException(InvalidSiteSettingException::class);

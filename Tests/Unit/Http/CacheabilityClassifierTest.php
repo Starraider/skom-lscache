@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Skom\Lscache\Tests\Unit\Http;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Skom\Lscache\Http\BypassReason;
 use Skom\Lscache\Http\CacheabilityClassifier;
+use Skom\Lscache\Http\MissingRequestContext;
 use Skom\Lscache\Http\PageContentInventory;
 use Skom\Lscache\Http\PageContentInventoryProvider;
 use TYPO3\CMS\Core\Context\Context;
@@ -19,6 +21,7 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\SiteSettings;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 
+#[AllowMockObjectsWithoutExpectations]
 final class CacheabilityClassifierTest extends TestCase
 {
     #[Test]
@@ -33,6 +36,20 @@ final class CacheabilityClassifierTest extends TestCase
 
         self::assertFalse($decision->cacheable);
         self::assertSame(BypassReason::BACKEND_CONTEXT, $decision->reason);
+    }
+
+    #[Test]
+    public function returnsMissingRequestContextWhenSiteAttributeIsAbsent(): void
+    {
+        $classifier = $this->createClassifier(PageContentInventory::empty());
+
+        $decision = $classifier->classify(
+            $this->createRequest('GET', '/news', withSite: false),
+            new Response(),
+        );
+
+        self::assertFalse($decision->cacheable);
+        self::assertSame(BypassReason::MISSING_REQUEST_CONTEXT, $decision->reason);
     }
 
     #[Test]
@@ -165,6 +182,30 @@ final class CacheabilityClassifierTest extends TestCase
         self::assertNull($decision->matchedRule);
     }
 
+    #[Test]
+    public function returnsMissingRequestContextWhenInventoryProviderCannotResolveRequestContext(): void
+    {
+        $provider = new class() implements PageContentInventoryProvider
+        {
+            public function getForRequest(\Psr\Http\Message\ServerRequestInterface $request): PageContentInventory
+            {
+                throw MissingRequestContext::forAttribute('routing');
+            }
+        };
+
+        $context = new Context();
+        $context->setAspect('frontend.user', new UserAspect());
+        $classifier = new CacheabilityClassifier($provider, $context);
+
+        $decision = $classifier->classify(
+            $this->createRequest('GET', '/news'),
+            new Response(),
+        );
+
+        self::assertFalse($decision->cacheable);
+        self::assertSame(BypassReason::MISSING_REQUEST_CONTEXT, $decision->reason);
+    }
+
     private function createClassifier(PageContentInventory $inventory): CacheabilityClassifier
     {
         $provider = new class($inventory) implements PageContentInventoryProvider
@@ -192,21 +233,25 @@ final class CacheabilityClassifierTest extends TestCase
         array $settings = [],
         bool $backend = false,
         bool $loggedInFrontendUser = false,
+        bool $withSite = true,
     ): ServerRequest {
         $siteSettings = SiteSettings::createFromSettingsTree($settings);
-        $site = new \TYPO3\CMS\Core\Site\Entity\Site(
-            'test',
-            1,
-            ['base' => 'https://example.org/', 'languages' => [[
-                'languageId' => 0,
-                'base' => '/',
-                'title' => 'Default',
-                'navigationTitle' => 'Default',
-                'flag' => 'us',
-                'locale' => 'en_US.UTF-8',
-            ]]],
-            $siteSettings,
-        );
+        $site = null;
+        if ($withSite) {
+            $site = new \TYPO3\CMS\Core\Site\Entity\Site(
+                'test',
+                1,
+                ['base' => 'https://example.org/', 'languages' => [[
+                    'languageId' => 0,
+                    'base' => '/',
+                    'title' => 'Default',
+                    'navigationTitle' => 'Default',
+                    'flag' => 'us',
+                    'locale' => 'en_US.UTF-8',
+                ]]],
+                $siteSettings,
+            );
+        }
 
         $frontendUser = null;
         if ($loggedInFrontendUser) {
@@ -219,7 +264,9 @@ final class CacheabilityClassifierTest extends TestCase
             'applicationType',
             $backend ? SystemEnvironmentBuilder::REQUESTTYPE_BE : SystemEnvironmentBuilder::REQUESTTYPE_FE,
         );
-        $request = $request->withAttribute('site', $site);
+        if ($site !== null) {
+            $request = $request->withAttribute('site', $site);
+        }
 
         return $request->withAttribute('frontend.user', $frontendUser);
     }

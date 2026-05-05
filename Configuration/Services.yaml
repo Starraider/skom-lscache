@@ -9,6 +9,12 @@ services:
 
   Skom\Lscache\Http\PageContentInventoryProvider: '@Skom\Lscache\Http\DbalPageContentInventoryProvider'
 
+  Skom\Lscache\Http\CacheabilityClassifierInterface: '@Skom\Lscache\Http\CacheabilityClassifier'
+
   skom.lscache.cacheability_classifier:
     alias: Skom\Lscache\Http\CacheabilityClassifier
+    public: true
+
+  skom.lscache.tag_schema:
+    alias: Skom\Lscache\Http\TagSchema
     public: true
