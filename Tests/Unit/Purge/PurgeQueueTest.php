@@ -112,6 +112,25 @@ final class PurgeQueueTest extends TestCase
         self::assertSame([], $secondDrain->fullSiteFlushes());
     }
 
+    #[Test]
+    public function everythingFlushCollapsesExistingAndFutureTargetedIntents(): void
+    {
+        $subject = $this->createQueue();
+        $subject->enqueueTags(['main_page_10']);
+        $subject->enqueueUrl('https://example.org/a');
+
+        $subject->enqueueEverythingFlush();
+        $subject->enqueueTags(['main_page_11']);
+        $subject->enqueueUrl('https://example.org/b');
+        $subject->enqueueFullSiteFlush('main');
+
+        $payload = $subject->drain();
+
+        self::assertSame([], $payload->tags());
+        self::assertSame([], $payload->urls());
+        self::assertSame(['*'], $payload->fullSiteFlushes());
+    }
+
     /**
      * @param array<string, string> $tagNamespacesBySite
      */

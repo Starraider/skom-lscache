@@ -35,6 +35,10 @@ final class PurgeQueue
      */
     public function enqueueTags(array $tags): void
     {
+        if ($this->hasEverythingFlush()) {
+            return;
+        }
+
         foreach ($tags as $tag) {
             if ($tag === '') {
                 continue;
@@ -55,6 +59,9 @@ final class PurgeQueue
         if ($siteIdentifier === '') {
             return;
         }
+        if ($this->hasEverythingFlush()) {
+            return;
+        }
 
         $tagNamespace = $this->tagNamespaceResolver->resolveForSite($siteIdentifier);
 
@@ -67,8 +74,20 @@ final class PurgeQueue
         ));
     }
 
+    public function enqueueEverythingFlush(): void
+    {
+        $this->tags = [];
+        $this->urls = [];
+        $this->fullSiteFlushes = ['*'];
+        $this->fullSiteFlushNamespaces = ['*' => '*'];
+    }
+
     public function enqueueUrl(string $absoluteUrl): void
     {
+        if ($this->hasEverythingFlush()) {
+            return;
+        }
+
         if (!$this->isAbsoluteUrl($absoluteUrl)) {
             return;
         }
@@ -95,6 +114,10 @@ final class PurgeQueue
 
     private function tagIsCoveredByAnyFullSiteFlush(string $tag): bool
     {
+        if ($this->hasEverythingFlush()) {
+            return true;
+        }
+
         foreach ($this->fullSiteFlushNamespaces as $tagNamespace) {
             if ($this->tagMatchesNamespace($tag, $tagNamespace)) {
                 return true;
@@ -102,6 +125,11 @@ final class PurgeQueue
         }
 
         return false;
+    }
+
+    private function hasEverythingFlush(): bool
+    {
+        return in_array('*', $this->fullSiteFlushes, true);
     }
 
     private function tagMatchesNamespace(string $tag, string $tagNamespace): bool

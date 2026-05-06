@@ -18,6 +18,12 @@ services:
     alias: Skom\Lscache\Purge\PurgeQueue
     public: true
 
+  Skom\Lscache\Purge\PurgeServiceInterface: '@Skom\Lscache\Purge\PurgeService'
+
+  skom.lscache.purge_service:
+    alias: Skom\Lscache\Purge\PurgeService
+    public: true
+
   Skom\Lscache\Http\PageContentInventoryProvider: '@Skom\Lscache\Http\DbalPageContentInventoryProvider'
 
   Skom\Lscache\Http\CacheabilityClassifierInterface: '@Skom\Lscache\Http\CacheabilityClassifier'
