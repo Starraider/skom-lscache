@@ -11,3 +11,10 @@ $GLOBALS['TYPO3_CONF_VARS']['LOG']['skom']['lscache']['writerConfiguration'] = [
         ],
     ],
 ];
+
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] =
+    \Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] =
+    \Skom\Lscache\Purge\EventListener\DataHandlerRecordDeletedListener::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] =
+    \Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener::class;
