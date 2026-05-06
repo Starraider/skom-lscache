@@ -33,8 +33,18 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
     #[Test]
     public function saveEventEnqueuesRecordAndPageTags(): void
     {
-        $listener = $this->get(DataHandlerRecordSavedListener::class);
+        $listener = $this->createSavedListener();
         $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['pid' => 1], $this->createDataHandlerMock());
+
+        $payload = $this->getQueue()->drain();
+        self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $payload->tags());
+    }
+
+    #[Test]
+    public function saveEventResolvesPidFromDatabaseWhenPidIsNotInChangedFieldValues(): void
+    {
+        $listener = $this->createSavedListener();
+        $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['header' => 'Updated'], $this->createDataHandlerMock());
 
         $payload = $this->getQueue()->drain();
         self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $payload->tags());
@@ -43,7 +53,7 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
     #[Test]
     public function deleteEventEnqueuesRecordAndPageTags(): void
     {
-        $listener = $this->get(DataHandlerRecordDeletedListener::class);
+        $listener = $this->createDeletedListener();
         $listener->processCmdmap_deleteAction('tt_content', 500, ['pid' => 1], true, $this->createDataHandlerMock());
 
         $payload = $this->getQueue()->drain();
@@ -53,7 +63,7 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
     #[Test]
     public function moveEventEnqueuesOldAndNewPageTags(): void
     {
-        $listener = $this->get(DataHandlerRecordMovedListener::class);
+        $listener = $this->createMovedListener();
         $targetPid = 2;
         $pasteUpdate = [];
         $listener->processCmdmap_preProcess('move', 'tt_content', 501, $targetPid, $this->createDataHandlerMock(), $pasteUpdate);
@@ -68,11 +78,39 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
     #[Test]
     public function backendOnlyTableDoesNotEnqueuePurge(): void
     {
-        $listener = $this->get(DataHandlerRecordSavedListener::class);
+        $listener = $this->createSavedListener();
         $listener->processDatamap_afterDatabaseOperations('update', 'be_users', 5, ['pid' => 1], $this->createDataHandlerMock());
 
         $payload = $this->getQueue()->drain();
         self::assertSame([], $payload->tags());
+    }
+
+    #[Test]
+    public function hideAndUnhideUpdatesEnqueueSameScopedTagSetAsRegularSave(): void
+    {
+        $listener = $this->createSavedListener();
+        $dataHandler = $this->createDataHandlerMock();
+
+        $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['hidden' => 1], $dataHandler);
+        $hiddenPayload = $this->getQueue()->drain();
+        self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $hiddenPayload->tags());
+
+        $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['hidden' => 0], $dataHandler);
+        $unhiddenPayload = $this->getQueue()->drain();
+        self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $unhiddenPayload->tags());
+    }
+
+    #[Test]
+    public function repeatedSameRecordUpdatesAreDeduplicatedWithinTheRequestQueue(): void
+    {
+        $listener = $this->createSavedListener();
+
+        for ($i = 0; $i < 500; $i++) {
+            $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['header' => 'Batch ' . $i], $this->createDataHandlerMock());
+        }
+
+        $payload = $this->getQueue()->drain();
+        self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $payload->tags());
     }
 
     private function getQueue(): PurgeQueue
@@ -89,6 +127,21 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
         $mock->substNEWwithIDs = [];
 
         return $mock;
+    }
+
+    private function createSavedListener(): DataHandlerRecordSavedListener
+    {
+        return $this->get(DataHandlerRecordSavedListener::class);
+    }
+
+    private function createDeletedListener(): DataHandlerRecordDeletedListener
+    {
+        return $this->get(DataHandlerRecordDeletedListener::class);
+    }
+
+    private function createMovedListener(): DataHandlerRecordMovedListener
+    {
+        return $this->get(DataHandlerRecordMovedListener::class);
     }
 
     private function insertPage(int $uid, int $pid, string $title): void
@@ -120,7 +173,7 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
 
     private function writeSiteConfiguration(bool $autoPurgeEnabled): void
     {
-        $sitePath = $this->instancePath . '/typo3conf/sites/main';
+        $sitePath = $this->instancePath . '/config/sites/main';
         if (!is_dir($sitePath)) {
             mkdir($sitePath, 0777, true);
         }

@@ -36,7 +36,11 @@ services:
     alias: Skom\Lscache\Http\TagSchema
     public: true
 
-  Skom\Lscache\Purge\EventListener\DataHandlerTagResolver: ~
-  Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener: ~
-  Skom\Lscache\Purge\EventListener\DataHandlerRecordDeletedListener: ~
-  Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener: ~
+  Skom\Lscache\Purge\EventListener\DataHandlerTagResolver:
+    public: true
+  Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener:
+    public: true
+  Skom\Lscache\Purge\EventListener\DataHandlerRecordDeletedListener:
+    public: true
+  Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener:
+    public: true

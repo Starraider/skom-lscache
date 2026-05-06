@@ -7,12 +7,14 @@ namespace Skom\Lscache\Purge\EventListener;
 use Skom\Lscache\Purge\Enum\PurgeSource;
 use Skom\Lscache\Purge\PurgeServiceInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 
 final readonly class DataHandlerRecordSavedListener
 {
     public function __construct(
         private DataHandlerTagResolver $tagResolver,
         private PurgeServiceInterface $purgeService,
+        private ConnectionPool $connectionPool,
     ) {}
 
     /**
@@ -26,7 +28,7 @@ final readonly class DataHandlerRecordSavedListener
         }
 
         $recordUid = $this->resolveRecordUid($id, $dataHandler);
-        $pid = (int)($fieldValues['pid'] ?? 0);
+        $pid = $this->resolvePid($table, $recordUid, $fieldValues);
         if ($recordUid <= 0 || $pid <= 0) {
             return;
         }
@@ -48,5 +50,27 @@ final readonly class DataHandlerRecordSavedListener
 
         $resolved = $dataHandler->substNEWwithIDs[$id] ?? 0;
         return (int)$resolved;
+    }
+
+    /**
+     * @param array<string, mixed> $fieldValues
+     */
+    private function resolvePid(string $table, int $recordUid, array $fieldValues): int
+    {
+        $pid = (int)($fieldValues['pid'] ?? 0);
+        if ($pid > 0 || $recordUid <= 0) {
+            return $pid;
+        }
+
+        $connection = $this->connectionPool->getConnectionForTable($table);
+        $resolvedPid = $connection->createQueryBuilder()
+            ->select('pid')
+            ->from($table)
+            ->where('uid = :uid')
+            ->setParameter('uid', $recordUid)
+            ->executeQuery()
+            ->fetchOne();
+
+        return (int)$resolvedPid;
     }
 }

@@ -29,7 +29,7 @@ final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCas
     #[Test]
     public function saveEventDoesNotEnqueueWhenAutopurgeIsDisabled(): void
     {
-        $listener = $this->get(DataHandlerRecordSavedListener::class);
+        $listener = $this->createSavedListener();
         $listener->processDatamap_afterDatabaseOperations('update', 'tt_content', 500, ['pid' => 1], $this->createDataHandlerMock());
 
         $payload = $this->getQueue()->drain();
@@ -52,6 +52,11 @@ final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCas
         return $mock;
     }
 
+    private function createSavedListener(): DataHandlerRecordSavedListener
+    {
+        return $this->get(DataHandlerRecordSavedListener::class);
+    }
+
     private function insertContent(int $uid, int $pid): void
     {
         $this->get(ConnectionPool::class)->getConnectionForTable('tt_content')->insert('tt_content', [
@@ -66,7 +71,7 @@ final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCas
 
     private function writeSiteConfiguration(): void
     {
-        $sitePath = $this->instancePath . '/typo3conf/sites/main';
+        $sitePath = $this->instancePath . '/config/sites/main';
         if (!is_dir($sitePath)) {
             mkdir($sitePath, 0777, true);
         }
