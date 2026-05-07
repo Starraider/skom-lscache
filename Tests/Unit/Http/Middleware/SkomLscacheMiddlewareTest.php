@@ -19,6 +19,9 @@ use Skom\Lscache\Http\HeaderWriter;
 use Skom\Lscache\Http\Middleware\SkomLscacheMiddleware;
 use Skom\Lscache\Http\OpenLiteSpeedDetector;
 use Skom\Lscache\Http\TagSchema;
+use Skom\Lscache\Purge\PurgeHeaderSerializer;
+use Skom\Lscache\Purge\PurgeQueue;
+use Skom\Lscache\Purge\TagNamespaceResolverInterface;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -71,6 +74,46 @@ final class SkomLscacheMiddlewareTest extends TestCase
         self::assertSame('public,max-age=900', $response->getHeaderLine('X-LiteSpeed-Cache-Control'));
         self::assertSame('siteA_site,siteA_page_42', $response->getHeaderLine('X-LiteSpeed-Tag'));
         self::assertSame('cookie=fe_typo_user,cookie=preview', $response->getHeaderLine('X-LiteSpeed-Vary'));
+    }
+
+    #[Test]
+    public function piggybackFlushAddsPurgeHeaderFromQueuedPayload(): void
+    {
+        $queue = $this->createQueue();
+        $queue->enqueueTags(['main_page_10']);
+        $queue->enqueueUrl('https://example.org/news');
+        $queue->enqueueFullSiteFlush('main');
+
+        $middleware = $this->createMiddleware(new CountingClassifier(CacheabilityDecision::cacheable()), queue: $queue);
+
+        $response = $middleware->process(
+            $this->createRequest(['lscache' => ['defaultTtl' => 900, 'tagNamespace' => 'siteA']]),
+            new FixedResponseHandler(new Response()),
+        );
+
+        self::assertTrue($response->hasHeader('X-LiteSpeed-Purge'));
+        self::assertSame('tag=main_*,url=https://example.org/news', $response->getHeaderLine('X-LiteSpeed-Purge'));
+        self::assertSame([], $queue->drain()->tags());
+    }
+
+    #[Test]
+    public function failedResponseSkipsFlushAndKeepsQueueForFallbackHandling(): void
+    {
+        $queue = $this->createQueue();
+        $queue->enqueueTags(['main_page_55']);
+
+        $middleware = $this->createMiddleware(
+            new CountingClassifier(CacheabilityDecision::cacheable()),
+            queue: $queue,
+        );
+
+        $response = $middleware->process(
+            $this->createRequest(['lscache' => ['defaultTtl' => 900, 'tagNamespace' => 'siteA']]),
+            new FixedResponseHandler(new Response('php://temp', 503)),
+        );
+
+        self::assertFalse($response->hasHeader('X-LiteSpeed-Purge'));
+        self::assertSame(['main_page_55'], $queue->drain()->tags());
     }
 
     #[Test]
@@ -196,7 +239,7 @@ final class SkomLscacheMiddlewareTest extends TestCase
         $middleware->process($request, new FixedResponseHandler(new Response()));
         $middleware->process($request, new FixedResponseHandler(new Response()));
 
-        self::assertCount(1, $logger->records);
+        self::assertCount(3, $logger->records);
         self::assertSame('notice', $logger->records[0]['level']);
         self::assertSame('non-ols-degraded', $logger->records[0]['context']['outcome']);
     }
@@ -205,8 +248,17 @@ final class SkomLscacheMiddlewareTest extends TestCase
         CacheabilityClassifierInterface $classifier,
         ?EventDispatcherInterface $eventDispatcher = null,
         ?InMemoryLogger $logger = null,
+        ?PurgeQueue $queue = null,
     ): SkomLscacheMiddleware {
         $logger ??= new InMemoryLogger();
+
+        $namespaceResolver = new class implements TagNamespaceResolverInterface
+        {
+            public function resolveForSite(string $siteIdentifier): string
+            {
+                return $siteIdentifier;
+            }
+        };
 
         return new SkomLscacheMiddleware(
             new HeaderEmissionDecider(),
@@ -215,6 +267,10 @@ final class SkomLscacheMiddlewareTest extends TestCase
             new TagSchema($logger),
             $eventDispatcher ?? new PassthroughDispatcher(),
             new OpenLiteSpeedDetector($logger),
+            $queue ?? new PurgeQueue($namespaceResolver),
+            new PurgeHeaderSerializer(),
+            $namespaceResolver,
+            $logger,
         );
     }
 
@@ -242,6 +298,17 @@ final class SkomLscacheMiddlewareTest extends TestCase
         ]))
             ->withAttribute('site', $site)
             ->withAttribute('routing', new PageArguments(42, '0', []));
+    }
+
+    private function createQueue(): PurgeQueue
+    {
+        return new PurgeQueue(new class implements TagNamespaceResolverInterface
+        {
+            public function resolveForSite(string $siteIdentifier): string
+            {
+                return $siteIdentifier;
+            }
+        });
     }
 }
 

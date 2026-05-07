@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Skom\Lscache\Tests\Functional\Purge;
 
 use PHPUnit\Framework\Attributes\Test;
+use Skom\Lscache\Http\TagSchema;
 use Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener;
+use Skom\Lscache\Purge\EventListener\DataHandlerTagResolver;
 use Skom\Lscache\Purge\PurgeQueue;
+use Skom\Lscache\Purge\PurgeServiceInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCase
@@ -54,7 +58,14 @@ final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCas
 
     private function createSavedListener(): DataHandlerRecordSavedListener
     {
-        return $this->get(DataHandlerRecordSavedListener::class);
+        return new DataHandlerRecordSavedListener(
+            new DataHandlerTagResolver(
+                $this->get(SiteFinder::class),
+                $this->get(TagSchema::class),
+            ),
+            $this->get(PurgeServiceInterface::class),
+            $this->get(ConnectionPool::class),
+        );
     }
 
     private function insertContent(int $uid, int $pid): void
@@ -71,7 +82,7 @@ final class DataHandlerListenersDisabledFunctionalTest extends FunctionalTestCas
 
     private function writeSiteConfiguration(): void
     {
-        $sitePath = $this->instancePath . '/config/sites/main';
+        $sitePath = $this->instancePath . '/typo3conf/sites/main';
         if (!is_dir($sitePath)) {
             mkdir($sitePath, 0777, true);
         }
@@ -96,11 +107,13 @@ languages:
 rootPageId: 1
 settings:
   lscache:
+    defaultTtl: 300
     tagNamespace: 'main'
     autopurge:
       dataHandler: false
 websiteTitle: ''
 YAML,
         );
+        $this->get(SiteFinder::class)->siteConfigurationChanged();
     }
 }

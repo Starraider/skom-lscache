@@ -5,12 +5,27 @@ declare(strict_types=1);
 namespace Skom\Lscache\Tests\Functional\Purge;
 
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Skom\Lscache\Http\TagSchema;
+use Skom\Lscache\Http\Middleware\SkomLscacheMiddleware;
 use Skom\Lscache\Purge\EventListener\DataHandlerRecordDeletedListener;
 use Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener;
 use Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener;
+use Skom\Lscache\Purge\EventListener\DataHandlerTagResolver;
 use Skom\Lscache\Purge\PurgeQueue;
+use Skom\Lscache\Purge\PurgeServiceInterface;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Routing\PageArguments;
+use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteSettings;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
@@ -113,6 +128,28 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
         self::assertSame(['main_site', 'main_page_1', 'main_record_tt_content_500'], $payload->tags());
     }
 
+    #[Test]
+    public function dataHandlerQueuedPurgeIsEmittedByMiddlewarePiggybackHeader(): void
+    {
+        $this->createSavedListener()->processDatamap_afterDatabaseOperations(
+            'update',
+            'tt_content',
+            500,
+            ['pid' => 1],
+            $this->createDataHandlerMock(),
+        );
+
+        $response = $this->get(SkomLscacheMiddleware::class)->process(
+            $this->createFrontendRequest(),
+            new DataHandlerFunctionalFixedResponseHandler(new Response()),
+        );
+
+        self::assertSame(
+            'tag=main_site,tag=main_page_1,tag=main_record_tt_content_500',
+            $response->getHeaderLine('X-LiteSpeed-Purge'),
+        );
+    }
+
     private function getQueue(): PurgeQueue
     {
         /** @var PurgeQueue $queue */
@@ -131,17 +168,36 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
 
     private function createSavedListener(): DataHandlerRecordSavedListener
     {
-        return $this->get(DataHandlerRecordSavedListener::class);
+        return new DataHandlerRecordSavedListener(
+            $this->createTagResolver(),
+            $this->get(PurgeServiceInterface::class),
+            $this->get(ConnectionPool::class),
+        );
     }
 
     private function createDeletedListener(): DataHandlerRecordDeletedListener
     {
-        return $this->get(DataHandlerRecordDeletedListener::class);
+        return new DataHandlerRecordDeletedListener(
+            $this->createTagResolver(),
+            $this->get(PurgeServiceInterface::class),
+        );
     }
 
     private function createMovedListener(): DataHandlerRecordMovedListener
     {
-        return $this->get(DataHandlerRecordMovedListener::class);
+        return new DataHandlerRecordMovedListener(
+            $this->createTagResolver(),
+            $this->get(PurgeServiceInterface::class),
+            $this->get(ConnectionPool::class),
+        );
+    }
+
+    private function createTagResolver(): DataHandlerTagResolver
+    {
+        return new DataHandlerTagResolver(
+            $this->get(SiteFinder::class),
+            $this->get(TagSchema::class),
+        );
     }
 
     private function insertPage(int $uid, int $pid, string $title): void
@@ -173,7 +229,7 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
 
     private function writeSiteConfiguration(bool $autoPurgeEnabled): void
     {
-        $sitePath = $this->instancePath . '/config/sites/main';
+        $sitePath = $this->instancePath . '/typo3conf/sites/main';
         if (!is_dir($sitePath)) {
             mkdir($sitePath, 0777, true);
         }
@@ -199,6 +255,7 @@ languages:
 rootPageId: 1
 settings:
   lscache:
+    defaultTtl: 300
     tagNamespace: 'main'
     autopurge:
       dataHandler: %s
@@ -207,5 +264,47 @@ YAML,
                 $autoPurgeEnabled ? 'true' : 'false',
             ),
         );
+        $this->get(SiteFinder::class)->siteConfigurationChanged();
+
+    }
+
+    private function createFrontendRequest(): ServerRequest
+    {
+        $site = new Site(
+            'main',
+            1,
+            ['base' => 'https://example.org/', 'languages' => [[
+                'languageId' => 0,
+                'base' => '/',
+                'title' => 'Default',
+                'navigationTitle' => 'Default',
+                'flag' => 'de',
+                'locale' => 'de_DE.UTF-8',
+            ]]],
+            SiteSettings::createFromSettingsTree([
+                'lscache' => [
+                    'enabled' => true,
+                    'defaultTtl' => 300,
+                    'tagNamespace' => 'main',
+                ],
+            ]),
+        );
+
+        return (new ServerRequest(new Uri('https://example.org/'), 'GET', null, [], [
+            'SERVER_SOFTWARE' => 'OpenLiteSpeed',
+        ]))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('site', $site)
+            ->withAttribute('routing', new PageArguments(1, '0', []));
+    }
+}
+
+final class DataHandlerFunctionalFixedResponseHandler implements RequestHandlerInterface
+{
+    public function __construct(private readonly ResponseInterface $response) {}
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->response;
     }
 }

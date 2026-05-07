@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Skom\Lscache\Http\Middleware\SkomLscacheMiddleware;
+use Skom\Lscache\Purge\PurgeQueue;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -60,6 +61,42 @@ final class MiddlewareHeaderEmissionTest extends FunctionalTestCase
         self::assertFalse($response->hasHeader('X-LiteSpeed-Vary'));
     }
 
+    #[Test]
+    public function queuedPayloadIsFlushedViaResponsePiggybackHeader(): void
+    {
+        $queue = $this->getQueue();
+        $queue->enqueueTags(['main_page_42']);
+        $queue->enqueueUrl('https://example.org/news');
+
+        $middleware = $this->get(SkomLscacheMiddleware::class);
+        $response = $middleware->process(
+            $this->createRequest(['lscache' => ['defaultTtl' => 300, 'tagNamespace' => 'main']]),
+            new FunctionalFixedResponseHandler(new Response()),
+        );
+
+        self::assertSame(
+            'tag=main_page_42,url=https://example.org/news',
+            $response->getHeaderLine('X-LiteSpeed-Purge'),
+        );
+        self::assertSame([], $queue->drain()->tags());
+    }
+
+    #[Test]
+    public function fiveHundredResponseDoesNotDrainQueueBeforeFlushPoint(): void
+    {
+        $queue = $this->getQueue();
+        $queue->enqueueTags(['main_page_42']);
+
+        $middleware = $this->get(SkomLscacheMiddleware::class);
+        $response = $middleware->process(
+            $this->createRequest(['lscache' => ['defaultTtl' => 300, 'tagNamespace' => 'main']]),
+            new FunctionalFixedResponseHandler(new Response('php://temp', 503)),
+        );
+
+        self::assertFalse($response->hasHeader('X-LiteSpeed-Purge'));
+        self::assertSame(['main_page_42'], $queue->drain()->tags());
+    }
+
     /**
      * @param array<string, mixed> $settings
      */
@@ -85,6 +122,14 @@ final class MiddlewareHeaderEmissionTest extends FunctionalTestCase
             ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
             ->withAttribute('site', $site)
             ->withAttribute('routing', new PageArguments(42, '0', []));
+    }
+
+    private function getQueue(): PurgeQueue
+    {
+        /** @var PurgeQueue $queue */
+        $queue = $this->get('skom.lscache.purge_queue');
+
+        return $queue;
     }
 }
 

@@ -10,12 +10,17 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Skom\Lscache\Http\CacheabilityClassifierInterface;
 use Skom\Lscache\Http\Event\CacheControlOverrideEvent;
 use Skom\Lscache\Http\HeaderEmissionDecider;
 use Skom\Lscache\Http\HeaderWriter;
 use Skom\Lscache\Http\OpenLiteSpeedDetector;
 use Skom\Lscache\Http\TagSchema;
+use Skom\Lscache\Purge\PurgeHeaderSerializer;
+use Skom\Lscache\Purge\PurgeQueue;
+use Skom\Lscache\Purge\TagNamespaceResolverInterface;
+use TYPO3\CMS\Core\Log\Channel;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteSettings;
@@ -40,6 +45,11 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
         private TagSchema $tagSchema,
         private EventDispatcherInterface $eventDispatcher,
         private OpenLiteSpeedDetector $openLiteSpeedDetector,
+        private PurgeQueue $purgeQueue,
+        private PurgeHeaderSerializer $purgeHeaderSerializer,
+        private TagNamespaceResolverInterface $tagNamespaceResolver,
+        #[Channel('skom.lscache')]
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -62,6 +72,8 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
 
         $response = $handler->handle($request);
         $this->openLiteSpeedDetector->logGracefulDegradationIfMissing($request);
+
+        $response = $this->flushPurgeQueueToResponse($request, $site, $response);
 
         $decision = $this->cacheabilityClassifier->classify($request, $response);
         if (!$decision->cacheable) {
@@ -87,6 +99,48 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
             $tagSet->tags,
             $this->resolveCookieAllowlist($siteSettings),
         );
+    }
+
+    private function flushPurgeQueueToResponse(
+        ServerRequestInterface $request,
+        Site $site,
+        ResponseInterface $response,
+    ): ResponseInterface {
+        $startedAt = microtime(true);
+        $requestId = $this->createRequestId();
+
+        if ($response->getStatusCode() >= 500) {
+            $this->logger->info('purge-flush', [
+                'site' => $site->getIdentifier(),
+                'source' => 'response-piggyback',
+                'tagCount' => 0,
+                'outcome' => 'skipped',
+                'latencyMs' => (int)round((microtime(true) - $startedAt) * 1000),
+                'requestId' => $requestId,
+            ]);
+
+            return $response;
+        }
+
+        $serialized = $this->purgeHeaderSerializer->serialize(
+            $this->purgeQueue->drain(),
+            fn (string $siteIdentifier): string => $this->tagNamespaceResolver->resolveForSite($siteIdentifier),
+        );
+
+        foreach ($serialized['headers'] as $headerValue) {
+            $response = $response->withAddedHeader('X-LiteSpeed-Purge', $headerValue);
+        }
+
+        $this->logger->info('purge-flush', [
+            'site' => $site->getIdentifier(),
+            'source' => 'response-piggyback',
+            'tagCount' => $serialized['tagCount'],
+            'outcome' => $serialized['outcome'],
+            'latencyMs' => (int)round((microtime(true) - $startedAt) * 1000),
+            'requestId' => $requestId,
+        ]);
+
+        return $response;
     }
 
     /**
@@ -194,5 +248,14 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
     private function isValidHeaderToken(string $token): bool
     {
         return preg_match('/^[!#$%&\'*+.^_`|~0-9A-Za-z-]+$/', $token) === 1;
+    }
+
+    private function createRequestId(): string
+    {
+        $bytes = random_bytes(16);
+        $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+        $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
     }
 }
