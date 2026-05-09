@@ -1,0 +1,347 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <div class="lscache-audit-log" data-audit-log-root>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.heading" />
+                </h1>
+                <p class="text-body-secondary mb-0">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.description" />
+                </p>
+            </div>
+            <div>
+                <a class="btn btn-outline-primary" href="{audit.exportUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.exportCsv" />
+                </a>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link" href="{audit.dashboardUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.dashboard" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{audit.auditLogUrl}" aria-current="page">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.auditLog" />
+                </a>
+            </li>
+        </ul>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{audit.auditLogBaseUrl}" method="get" class="vstack gap-3" data-audit-log-form>
+                    <input type="hidden" name="page" value="1" />
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-4">
+                            <label class="form-label" for="audit-site-filter">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.site" />
+                            </label>
+                            <select id="audit-site-filter" class="form-select" name="site[]" multiple size="5" data-audit-filter-site>
+                                <f:for each="{audit.siteOptions}" as="siteOption">
+                                    <option value="{siteOption.value}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
+                                </f:for>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-lg-4">
+                            <fieldset>
+                                <legend class="form-label mb-2">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.source" />
+                                </legend>
+                                <div class="vstack gap-2">
+                                    <f:for each="{audit.sourceOptions}" as="sourceOption" iteration="sourceLoop">
+                                        <div class="form-check">
+                                            <input
+                                                id="audit-source-{sourceLoop.cycle}"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="source[]"
+                                                value="{sourceOption.value}"
+                                                {f:if(condition: sourceOption.selected, then: 'checked="checked"')}
+                                            />
+                                            <label class="form-check-label d-inline-flex align-items-center gap-2" for="audit-source-{sourceLoop.cycle}">
+                                                <core:icon identifier="{sourceOption.iconIdentifier}" size="small" />
+                                                <span>{sourceOption.label}</span>
+                                            </label>
+                                        </div>
+                                    </f:for>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <div class="col-12 col-lg-4">
+                            <fieldset>
+                                <legend class="form-label mb-2">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.outcome" />
+                                </legend>
+                                <div class="vstack gap-2">
+                                    <f:for each="{audit.outcomeOptions}" as="outcomeOption" iteration="outcomeLoop">
+                                        <div class="form-check">
+                                            <input
+                                                id="audit-outcome-{outcomeLoop.cycle}"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="outcome[]"
+                                                value="{outcomeOption.value}"
+                                                {f:if(condition: outcomeOption.selected, then: 'checked="checked"')}
+                                            />
+                                            <label class="form-check-label d-inline-flex align-items-center gap-2" for="audit-outcome-{outcomeLoop.cycle}">
+                                                <core:icon identifier="{outcomeOption.iconIdentifier}" size="small" />
+                                                <span>{outcomeOption.label}</span>
+                                            </label>
+                                        </div>
+                                    </f:for>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-lg-3">
+                            <label class="form-label" for="audit-date-preset">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.datePreset" />
+                            </label>
+                            <select id="audit-date-preset" class="form-select" name="datePreset" data-audit-date-preset>
+                                <f:for each="{audit.datePresetOptions}" as="datePresetOption">
+                                    <option value="{datePresetOption.value}"{f:if(condition: datePresetOption.selected, then: ' selected="selected"')}>{datePresetOption.label}</option>
+                                </f:for>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-lg-3" data-audit-custom-date-from>
+                            <label class="form-label" for="audit-custom-from">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.customFrom" />
+                            </label>
+                            <input
+                                id="audit-custom-from"
+                                class="form-control"
+                                type="datetime-local"
+                                name="customFrom"
+                                value="{audit.filters.customFrom}"
+                            />
+                        </div>
+
+                        <div class="col-12 col-lg-3" data-audit-custom-date-to>
+                            <label class="form-label" for="audit-custom-to">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.customTo" />
+                            </label>
+                            <input
+                                id="audit-custom-to"
+                                class="form-control"
+                                type="datetime-local"
+                                name="customTo"
+                                value="{audit.filters.customTo}"
+                            />
+                        </div>
+
+                        <div class="col-12 col-lg-3">
+                            <label class="form-label" for="audit-per-page">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.perPage" />
+                            </label>
+                            <select id="audit-per-page" class="form-select" name="perPage" data-audit-per-page>
+                                <f:for each="{audit.filters.perPageOptions}" as="perPageOption">
+                                    <option value="{perPageOption}"{f:if(condition: perPageOption == audit.filters.perPage, then: ' selected="selected"')}>{perPageOption}</option>
+                                </f:for>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <a href="{audit.resetUrl}" class="btn btn-link px-0" data-audit-reset-link data-audit-log-link>
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.resetFilters" />
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.applyFilters" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <f:if condition="{audit.exportWillTruncate}">
+            <div class="alert alert-warning">
+                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.exportTruncationWarning" arguments="{0: 10000}" />
+            </div>
+        </f:if>
+
+        <div class="card" data-audit-log-results>
+            <div class="card-body p-0">
+                <f:if condition="{audit.isEmpty}">
+                    <f:then>
+                        <div class="p-4">
+                            <div class="alert alert-secondary mb-0">
+                                <p class="mb-2">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.emptyState" />
+                                </p>
+                                <a href="{audit.resetUrl}" data-audit-reset-link data-audit-log-link>
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.resetFilters" />
+                                </a>
+                            </div>
+                        </div>
+                    </f:then>
+                    <f:else>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.timestamp" /></th>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.site" /></th>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.source" /></th>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.triggerRef" /></th>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.tags" /></th>
+                                        <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.outcome" /></th>
+                                        <th class="text-end"><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.columns.latencyMs" /></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <f:for each="{audit.rows}" as="row" iteration="rowLoop">
+                                        <tr data-audit-row="{row.requestId}">
+                                            <td class="text-nowrap">
+                                                <div>{row.absoluteTimestamp}</div>
+                                                <div class="small text-body-secondary">{row.relativeTimestamp}</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold">{row.siteLabel}</div>
+                                                <code class="small text-body-secondary">{row.siteIdentifier}</code>
+                                            </td>
+                                            <td>
+                                                <span class="d-inline-flex align-items-center gap-1">
+                                                    <core:icon identifier="{row.sourceIconIdentifier}" size="small" />
+                                                    <span>{row.sourceLabel}</span>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <f:if condition="{row.triggerRef}">
+                                                    <f:then>
+                                                        <f:if condition="{row.triggerEditUrl}">
+                                                            <f:then>
+                                                                <a href="{row.triggerEditUrl}"><code>{row.triggerRef}</code></a>
+                                                            </f:then>
+                                                            <f:else>
+                                                                <code>{row.triggerRef}</code>
+                                                            </f:else>
+                                                        </f:if>
+                                                    </f:then>
+                                                    <f:else>
+                                                        <span class="text-body-tertiary">-</span>
+                                                    </f:else>
+                                                </f:if>
+                                            </td>
+                                            <td>
+                                                <div class="d-inline-flex align-items-center gap-2">
+                                                    <span class="badge text-bg-secondary">{row.tagCount}</span>
+                                                    <f:if condition="{row.tags}">
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            data-audit-tags-toggle="audit-tags-{rowLoop.cycle}"
+                                                        >
+                                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.expandTags" />
+                                                        </button>
+                                                    </f:if>
+                                                </div>
+                                                <f:if condition="{row.tags}">
+                                                    <ul id="audit-tags-{rowLoop.cycle}" class="small mt-2 mb-0 ps-3" hidden>
+                                                        <f:for each="{row.tags}" as="tag">
+                                                            <li><code>{tag}</code></li>
+                                                        </f:for>
+                                                    </ul>
+                                                </f:if>
+                                            </td>
+                                            <td>
+                                                <span class="d-inline-flex align-items-center gap-1 text-{row.outcomeStatusClass}">
+                                                    <core:icon identifier="{row.outcomeIconIdentifier}" size="small" />
+                                                    <span class="fw-semibold">{row.outcomeLabel}</span>
+                                                </span>
+                                            </td>
+                                            <td class="text-end">{row.latencyMs}</td>
+                                        </tr>
+                                    </f:for>
+                                </tbody>
+                            </table>
+                        </div>
+                    </f:else>
+                </f:if>
+            </div>
+
+            <div class="card-footer" data-audit-total-pages="{audit.pagination.totalPages}">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <strong>{audit.totalRows}</strong>
+                        <span class="text-body-secondary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.rows" />
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <f:if condition="{audit.pagination.hasPrev}">
+                            <a class="btn btn-outline-secondary btn-sm" href="{audit.pagination.prevUrl}" data-audit-pagination-prev data-audit-log-link>
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.previous" />
+                            </a>
+                        </f:if>
+
+                        <f:for each="{audit.pagination.pageLinks}" as="pageLink">
+                            <a
+                                class="btn btn-sm {f:if(condition: pageLink.current, then: 'btn-primary', else: 'btn-outline-secondary')}"
+                                href="{pageLink.url}"
+                                data-audit-log-link
+                            >
+                                {pageLink.page}
+                            </a>
+                        </f:for>
+
+                        <f:if condition="{audit.pagination.hasNext}">
+                            <a class="btn btn-outline-secondary btn-sm" href="{audit.pagination.nextUrl}" data-audit-pagination-next data-audit-log-link>
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.next" />
+                            </a>
+                        </f:if>
+                    </div>
+
+                    <form action="{audit.auditLogBaseUrl}" method="get" class="d-inline-flex align-items-center gap-2" data-audit-jump-form data-audit-log-form>
+                        <f:for each="{audit.filters.siteIdentifiers}" as="siteIdentifier">
+                            <input type="hidden" name="site[]" value="{siteIdentifier}" />
+                        </f:for>
+                        <f:for each="{audit.filters.sourceValues}" as="sourceValue">
+                            <input type="hidden" name="source[]" value="{sourceValue}" />
+                        </f:for>
+                        <f:for each="{audit.filters.outcomeValues}" as="outcomeValue">
+                            <input type="hidden" name="outcome[]" value="{outcomeValue}" />
+                        </f:for>
+                        <input type="hidden" name="datePreset" value="{audit.filters.datePreset}" />
+                        <input type="hidden" name="customFrom" value="{audit.filters.customFrom}" />
+                        <input type="hidden" name="customTo" value="{audit.filters.customTo}" />
+                        <input type="hidden" name="perPage" value="{audit.filters.perPage}" />
+                        <label class="small text-body-secondary mb-0" for="audit-jump-page">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.jump" />
+                        </label>
+                        <input
+                            id="audit-jump-page"
+                            class="form-control form-control-sm"
+                            style="width: 5rem;"
+                            type="number"
+                            name="page"
+                            min="1"
+                            max="{audit.pagination.totalPages}"
+                            value="{audit.pagination.currentPage}"
+                        />
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.go" />
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</f:section>
+
+</html>

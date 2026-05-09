@@ -1,0 +1,285 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <div class="lscache-dashboard">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.heading" />
+                </h1>
+                <p class="text-body-secondary mb-0">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.description" />
+                </p>
+            </div>
+            <div class="text-body-secondary small text-md-end">
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
+                    </span>
+                    {dashboard.selectedSiteLabel}
+                </div>
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
+                    </span>
+                    <code>{dashboard.selectedSiteBaseUrl}</code>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" href="{dashboard.dashboardUrl}" aria-current="page">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.dashboard" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{auditLogUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.auditLog" />
+                </a>
+            </li>
+        </ul>
+
+        <div class="row g-3 mb-4">
+            <f:for each="{dashboard.summaryCards}" as="card">
+                <div class="col-12 col-md-4">
+                    <article class="card h-100 shadow-sm" data-summary-card="{card.key}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div>
+                                    <div class="text-body-secondary small text-uppercase fw-semibold">
+                                        {card.label}
+                                    </div>
+                                    <div class="display-6 fw-semibold mb-1" data-summary-card-value="{card.key}">
+                                        {card.value}
+                                    </div>
+                                    <p class="text-body-secondary mb-0">
+                                        {card.description}
+                                    </p>
+                                </div>
+                                <div class="text-{card.statusClass}">
+                                    <core:icon identifier="{card.iconIdentifier}" size="medium" />
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </f:for>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xxl-5">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.siteSelector.heading" />
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <f:render partial="SiteSelector" arguments="{dashboard: dashboard}" />
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.title" />
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-body-secondary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.description" />
+                        </p>
+
+                        <form
+                            action="{dashboard.probeEndpointUrl}"
+                            method="post"
+                            class="vstack gap-3"
+                            data-cache-probe-form
+                            data-loading-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.loading')}"
+                            data-http-error-title="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.state.http-error.title')}"
+                            data-network-error-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.error.network')}"
+                            data-unexpected-error-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.error.unexpected')}"
+                        >
+                            <input type="hidden" name="site" value="{dashboard.selectedSiteIdentifier}" data-cache-probe-site />
+                            <div>
+                                <label for="lscache-probe-target" class="form-label">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.target.label" />
+                                </label>
+                                <input
+                                    id="lscache-probe-target"
+                                    name="target"
+                                    type="text"
+                                    class="form-control"
+                                    value="{dashboard.probeTargetUrl}"
+                                    placeholder="{dashboard.probeTargetUrl}"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                    required
+                                    data-cache-probe-target
+                                />
+                                <div class="form-text">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.target.help" />
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary" data-cache-probe-submit>
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.submit" />
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-3" aria-live="polite" aria-atomic="true" data-cache-probe-result>
+                            <div class="alert alert-info mb-0">
+                                <div class="d-flex align-items-start gap-3">
+                                    <core:icon identifier="actions-info-circle" />
+                                    <div>
+                                        <div class="fw-semibold">
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.placeholder.title" />
+                                        </div>
+                                        <p class="mb-0">
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.placeholder.message" />
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xxl-7">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.breakdown.title" />
+                            </h2>
+                            <p class="text-body-secondary mb-0 small">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.breakdown.description" />
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.breakdown.columns.site" />
+                                        </th>
+                                        <th class="text-end">
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.breakdown.columns.count" />
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <f:for each="{dashboard.siteBreakdown}" as="row">
+                                        <tr data-site-breakdown-row="{row.siteIdentifier}" class="{f:if(condition: row.selected, then: 'table-primary')}">
+                                            <td>
+                                                <div class="fw-semibold">{row.label}</div>
+                                                <code class="text-body-secondary">{row.siteIdentifier}</code>
+                                            </td>
+                                            <td class="text-end fw-semibold">{row.count}</td>
+                                        </tr>
+                                    </f:for>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.title" />
+                            </h2>
+                            <p class="text-body-secondary mb-0 small">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.description" />
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <f:if condition="{dashboard.recentRows}">
+                            <f:then>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.timestamp" />
+                                                </th>
+                                                <th>
+                                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.request" />
+                                                </th>
+                                                <th>
+                                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.source" />
+                                                </th>
+                                                <th>
+                                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.outcome" />
+                                                </th>
+                                                <th class="text-end">
+                                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.tags" />
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <f:for each="{dashboard.recentRows}" as="row">
+                                                <tr data-recent-row="{row.requestId}">
+                                                    <td class="text-nowrap">
+                                                        <time>
+                                                            <f:format.date format="Y-m-d H:i">{row.crdate}</f:format.date>
+                                                        </time>
+                                                    </td>
+                                                    <td>
+                                                        <div class="fw-semibold">
+                                                            <code>{row.requestId}</code>
+                                                        </div>
+                                                        <f:if condition="{row.triggerRef}">
+                                                            <div class="small text-body-secondary">
+                                                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.trigger" />:
+                                                                <code>{row.triggerRef}</code>
+                                                            </div>
+                                                        </f:if>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge text-bg-light border">{row.sourceLabel}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="d-inline-flex align-items-center gap-1 text-{row.outcomeStatusClass}">
+                                                            <core:icon identifier="{row.outcomeIconIdentifier}" size="small" />
+                                                            <span class="fw-semibold">{row.outcomeLabel}</span>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span class="badge text-bg-secondary">{row.tagCount}</span>
+                                                    </td>
+                                                </tr>
+                                            </f:for>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </f:then>
+                            <f:else>
+                                <div class="p-4">
+                                    <div class="alert alert-secondary mb-0">
+                                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.empty" />
+                                    </div>
+                                </div>
+                            </f:else>
+                        </f:if>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</f:section>
+
+</html>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-05-08" product-name="skom_lscache">
+        <header/>
+        <body>
+            <trans-unit id="dashboard.title"><source>LiteSpeed Cache</source><target>LiteSpeed Cache</target></trans-unit>
+            <trans-unit id="dashboard.heading"><source>Dashboard</source><target>Dashboard</target></trans-unit>
+            <trans-unit id="dashboard.description"><source>Inspect purge totals and probe cache-hit status for the selected site.</source><target>Purge-Summen und Cache-Hit-Status für die gewählte Site prüfen.</target></trans-unit>
+            <trans-unit id="dashboard.currentSite.label"><source>Current site</source><target>Aktuelle Site</target></trans-unit>
+            <trans-unit id="dashboard.currentBase.label"><source>Default probe base</source><target>Standard-Probe-URL</target></trans-unit>
+
+            <trans-unit id="dashboard.siteSelector.heading"><source>Site selector</source><target>Site-Auswahl</target></trans-unit>
+            <trans-unit id="dashboard.siteSelector.label"><source>Site</source><target>Site</target></trans-unit>
+            <trans-unit id="dashboard.siteSelector.help"><source>Choose a configured site before running the summary cards or the probe.</source><target>Wähle eine konfigurierte Site, bevor du die Kennzahlen oder die Probe ausführst.</target></trans-unit>
+            <trans-unit id="dashboard.siteSelector.submit"><source>Load site</source><target>Site laden</target></trans-unit>
+            <trans-unit id="dashboard.siteSelector.none"><source>No sites are configured yet.</source><target>Es sind noch keine Sites konfiguriert.</target></trans-unit>
+
+            <trans-unit id="dashboard.summary.last24h.label"><source>Last 24 hours</source><target>Letzte 24 Stunden</target></trans-unit>
+            <trans-unit id="dashboard.summary.last24h.description"><source>Purge rows created in the last 24 hours.</source><target>Purge-Einträge aus den letzten 24 Stunden.</target></trans-unit>
+            <trans-unit id="dashboard.summary.last7d.label"><source>Last 7 days</source><target>Letzte 7 Tage</target></trans-unit>
+            <trans-unit id="dashboard.summary.last7d.description"><source>Purge rows created in the last 7 days.</source><target>Purge-Einträge aus den letzten 7 Tagen.</target></trans-unit>
+            <trans-unit id="dashboard.summary.last30d.label"><source>Last 30 days</source><target>Letzte 30 Tage</target></trans-unit>
+            <trans-unit id="dashboard.summary.last30d.description"><source>Purge rows created in the last 30 days.</source><target>Purge-Einträge aus den letzten 30 Tagen.</target></trans-unit>
+
+            <trans-unit id="dashboard.breakdown.title"><source>Site breakdown</source><target>Site-Verteilung</target></trans-unit>
+            <trans-unit id="dashboard.breakdown.description"><source>All purge rows grouped by site identifier, including the unknown bucket.</source><target>Alle Purge-Einträge gruppiert nach Site-Identifier, einschließlich des unknown-Buckets.</target></trans-unit>
+            <trans-unit id="dashboard.breakdown.columns.site"><source>Site</source><target>Site</target></trans-unit>
+            <trans-unit id="dashboard.breakdown.columns.count"><source>Count</source><target>Anzahl</target></trans-unit>
+
+            <trans-unit id="dashboard.recent.title"><source>Recent purges</source><target>Aktuelle Purges</target></trans-unit>
+            <trans-unit id="dashboard.recent.description"><source>The five newest purge rows for the selected site.</source><target>Die fünf neuesten Purge-Einträge der gewählten Site.</target></trans-unit>
+            <trans-unit id="dashboard.recent.empty"><source>No purge rows recorded for this site yet.</source><target>Für diese Site wurden noch keine Purge-Einträge erfasst.</target></trans-unit>
+            <trans-unit id="dashboard.recent.columns.timestamp"><source>Timestamp</source><target>Zeitpunkt</target></trans-unit>
+            <trans-unit id="dashboard.recent.columns.request"><source>Request ID</source><target>Request-ID</target></trans-unit>
+            <trans-unit id="dashboard.recent.columns.source"><source>Source</source><target>Quelle</target></trans-unit>
+            <trans-unit id="dashboard.recent.columns.outcome"><source>Outcome</source><target>Ergebnis</target></trans-unit>
+            <trans-unit id="dashboard.recent.columns.tags"><source>Tags</source><target>Tags</target></trans-unit>
+            <trans-unit id="dashboard.recent.trigger"><source>Trigger</source><target>Auslöser</target></trans-unit>
+
+            <trans-unit id="module.tab.dashboard"><source>Dashboard</source><target>Dashboard</target></trans-unit>
+            <trans-unit id="module.tab.auditLog"><source>Audit Log</source><target>Audit-Log</target></trans-unit>
+
+            <trans-unit id="auditLog.heading"><source>Audit Log</source><target>Audit-Log</target></trans-unit>
+            <trans-unit id="auditLog.description"><source>Inspect purge events with filterable diagnostics and export support.</source><target>Purge-Ereignisse mit Filterdiagnose und CSV-Export analysieren.</target></trans-unit>
+            <trans-unit id="auditLog.exportCsv"><source>Export CSV</source><target>CSV exportieren</target></trans-unit>
+            <trans-unit id="auditLog.exportTruncationWarning"><source>Export is limited to the newest %d rows for the selected filters.</source><target>Der Export ist auf die neuesten %d Zeilen für die gewählten Filter begrenzt.</target></trans-unit>
+            <trans-unit id="auditLog.applyFilters"><source>Apply filters</source><target>Filter anwenden</target></trans-unit>
+            <trans-unit id="auditLog.resetFilters"><source>Reset filters</source><target>Filter zurücksetzen</target></trans-unit>
+            <trans-unit id="auditLog.emptyState"><source>No purges match these filters.</source><target>Keine Purges entsprechen diesen Filtern.</target></trans-unit>
+            <trans-unit id="auditLog.expandTags"><source>Show tags</source><target>Tags anzeigen</target></trans-unit>
+
+            <trans-unit id="auditLog.columns.timestamp"><source>Timestamp</source><target>Zeitpunkt</target></trans-unit>
+            <trans-unit id="auditLog.columns.site"><source>Site</source><target>Site</target></trans-unit>
+            <trans-unit id="auditLog.columns.source"><source>Source</source><target>Quelle</target></trans-unit>
+            <trans-unit id="auditLog.columns.triggerRef"><source>Trigger Ref</source><target>Trigger-Ref</target></trans-unit>
+            <trans-unit id="auditLog.columns.tags"><source>Tags</source><target>Tags</target></trans-unit>
+            <trans-unit id="auditLog.columns.outcome"><source>Outcome</source><target>Ergebnis</target></trans-unit>
+            <trans-unit id="auditLog.columns.latencyMs"><source>Latency (ms)</source><target>Latenz (ms)</target></trans-unit>
+
+            <trans-unit id="auditLog.filters.site"><source>Site</source><target>Site</target></trans-unit>
+            <trans-unit id="auditLog.filters.source"><source>Source</source><target>Quelle</target></trans-unit>
+            <trans-unit id="auditLog.filters.outcome"><source>Outcome</source><target>Ergebnis</target></trans-unit>
+            <trans-unit id="auditLog.filters.datePreset"><source>Date range</source><target>Zeitraum</target></trans-unit>
+            <trans-unit id="auditLog.filters.customFrom"><source>Custom from</source><target>Von</target></trans-unit>
+            <trans-unit id="auditLog.filters.customTo"><source>Custom to</source><target>Bis</target></trans-unit>
+            <trans-unit id="auditLog.filters.perPage"><source>Rows per page</source><target>Zeilen pro Seite</target></trans-unit>
+            <trans-unit id="auditLog.filters.datePreset.lastHour"><source>Last hour</source><target>Letzte Stunde</target></trans-unit>
+            <trans-unit id="auditLog.filters.datePreset.last24h"><source>Last 24 hours</source><target>Letzte 24 Stunden</target></trans-unit>
+            <trans-unit id="auditLog.filters.datePreset.last7d"><source>Last 7 days</source><target>Letzte 7 Tage</target></trans-unit>
+            <trans-unit id="auditLog.filters.datePreset.custom"><source>Custom range</source><target>Eigener Zeitraum</target></trans-unit>
+
+            <trans-unit id="auditLog.pagination.rows"><source>rows</source><target>Zeilen</target></trans-unit>
+            <trans-unit id="auditLog.pagination.previous"><source>Previous</source><target>Zurück</target></trans-unit>
+            <trans-unit id="auditLog.pagination.next"><source>Next</source><target>Weiter</target></trans-unit>
+            <trans-unit id="auditLog.pagination.jump"><source>Jump to page</source><target>Zu Seite</target></trans-unit>
+            <trans-unit id="auditLog.pagination.go"><source>Go</source><target>Los</target></trans-unit>
+
+            <trans-unit id="auditLog.time.relative.justNow"><source>just now</source><target>gerade eben</target></trans-unit>
+            <trans-unit id="auditLog.time.relative.minutes"><source>%d min ago</source><target>vor %d Min.</target></trans-unit>
+            <trans-unit id="auditLog.time.relative.hours"><source>%d h ago</source><target>vor %d Std.</target></trans-unit>
+            <trans-unit id="auditLog.time.relative.days"><source>%d d ago</source><target>vor %d T.</target></trans-unit>
+
+            <trans-unit id="site.unknown"><source>Unknown</source><target>Unbekannt</target></trans-unit>
+
+            <trans-unit id="source.datahandler"><source>DataHandler</source><target>DataHandler</target></trans-unit>
+            <trans-unit id="source.cli"><source>CLI</source><target>CLI</target></trans-unit>
+            <trans-unit id="source.module"><source>Backend module</source><target>Backend-Modul</target></trans-unit>
+            <trans-unit id="source.api"><source>API</source><target>API</target></trans-unit>
+            <trans-unit id="source.cache_flush_event"><source>Cache flush event</source><target>CacheFlushEvent</target></trans-unit>
+
+            <trans-unit id="outcome.enqueued"><source>Enqueued</source><target>Enqueued</target></trans-unit>
+            <trans-unit id="outcome.flushed"><source>Flushed</source><target>Gepusht</target></trans-unit>
+            <trans-unit id="outcome.truncated"><source>Truncated</source><target>Gekürzt</target></trans-unit>
+            <trans-unit id="outcome.failed"><source>Failed</source><target>Fehlgeschlagen</target></trans-unit>
+            <trans-unit id="outcome.skipped"><source>Skipped</source><target>Übersprungen</target></trans-unit>
+
+            <trans-unit id="probe.title"><source>Cache-Hit Probe</source><target>Cache-Hit-Prüfung</target></trans-unit>
+            <trans-unit id="probe.description"><source>Send a HEAD request and inspect the LiteSpeed cache headers.</source><target>Sendet eine HEAD-Anfrage und prüft die LiteSpeed-Cache-Header.</target></trans-unit>
+            <trans-unit id="probe.target.label"><source>Target URL</source><target>Ziel-URL</target></trans-unit>
+            <trans-unit id="probe.target.help"><source>Use an absolute URL or a path relative to the selected site base.</source><target>Verwende eine absolute URL oder einen Pfad relativ zur gewählten Site-Base.</target></trans-unit>
+            <trans-unit id="probe.submit"><source>Probe cache status</source><target>Cache-Status prüfen</target></trans-unit>
+            <trans-unit id="probe.loading"><source>Probing...</source><target>Prüfe ...</target></trans-unit>
+            <trans-unit id="probe.placeholder.title"><source>No probe run yet</source><target>Noch keine Prüfung ausgeführt</target></trans-unit>
+            <trans-unit id="probe.placeholder.message"><source>Enter a URL and run the probe to inspect the cache response.</source><target>Gib eine URL ein und starte die Prüfung, um die Cache-Antwort zu sehen.</target></trans-unit>
+            <trans-unit id="probe.error.network"><source>The probe request could not reach the target.</source><target>Die Probe-Anfrage konnte das Ziel nicht erreichen.</target></trans-unit>
+            <trans-unit id="probe.error.unexpected"><source>The probe request failed unexpectedly.</source><target>Die Probe-Anfrage ist unerwartet fehlgeschlagen.</target></trans-unit>
+            <trans-unit id="probe.error.disallowedTarget"><source>The target host is not allowed for probing.</source><target>Der Ziel-Host ist für die Probe nicht erlaubt.</target></trans-unit>
+
+            <trans-unit id="probe.state.hit.title"><source>HIT</source><target>HIT</target></trans-unit>
+            <trans-unit id="probe.state.hit.message"><source>The response was served from cache.</source><target>Die Antwort wurde aus dem Cache ausgeliefert.</target></trans-unit>
+            <trans-unit id="probe.state.miss.title"><source>MISS</source><target>MISS</target></trans-unit>
+            <trans-unit id="probe.state.miss.message"><source>The response was cacheable but not served from cache.</source><target>Die Antwort war cachebar, wurde aber nicht aus dem Cache ausgeliefert.</target></trans-unit>
+            <trans-unit id="probe.state.not-cacheable.title"><source>NOT-CACHEABLE</source><target>NOT-CACHEABLE</target></trans-unit>
+            <trans-unit id="probe.state.not-cacheable.message"><source>The response cannot be cached.</source><target>Die Antwort kann nicht gecacht werden.</target></trans-unit>
+            <trans-unit id="probe.state.no-lscache-header.title"><source>NO-LSCACHE-HEADER</source><target>NO-LSCACHE-HEADER</target></trans-unit>
+            <trans-unit id="probe.state.no-lscache-header.message"><source>The response did not expose a LiteSpeed cache header.</source><target>Die Antwort hat keinen LiteSpeed-Cache-Header geliefert.</target></trans-unit>
+            <trans-unit id="probe.state.timeout.title"><source>TIMEOUT</source><target>TIMEOUT</target></trans-unit>
+            <trans-unit id="probe.state.timeout.message"><source>The probe request timed out.</source><target>Die Probe-Anfrage ist in ein Timeout gelaufen.</target></trans-unit>
+            <trans-unit id="probe.state.http-error.title"><source>HTTP-ERROR</source><target>HTTP-ERROR</target></trans-unit>
+            <trans-unit id="probe.state.http-error.message"><source>The probe request returned an HTTP error.</source><target>Die Probe-Anfrage hat einen HTTP-Fehler zurückgegeben.</target></trans-unit>
+
+            <trans-unit id="probe.details.header"><source>Header %s reported %s.</source><target>Der Header %s meldet %s.</target></trans-unit>
+            <trans-unit id="probe.details.statusCode"><source>HTTP status %d.</source><target>HTTP-Status %d.</target></trans-unit>
+            <trans-unit id="probe.details.noHeader"><source>No LiteSpeed cache header was returned.</source><target>Es wurde kein LiteSpeed-Cache-Header zurückgegeben.</target></trans-unit>
+            <trans-unit id="probe.details.timeout"><source>The request exceeded the 3-second timeout.</source><target>Die Anfrage hat das 3-Sekunden-Timeout überschritten.</target></trans-unit>
+            <trans-unit id="probe.details.requestFailed"><source>The probe request could not be completed.</source><target>Die Probe-Anfrage konnte nicht abgeschlossen werden.</target></trans-unit>
+            <trans-unit id="probe.details.disallowedTarget"><source>Use the selected site host, or configure lscache.probe.allowedHosts in site settings.</source><target>Verwende den Host der gewählten Site oder konfiguriere lscache.probe.allowedHosts in den Site-Einstellungen.</target></trans-unit>
+        </body>
+    </file>
+</xliff>

@@ -19,6 +19,9 @@ categories:
   lscache.audit:
     label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.audit'
     parent: lscache
+  lscache.probe:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.category.lscache.probe'
+    parent: lscache
 
 settings:
   lscache.enabled:
@@ -113,6 +116,12 @@ settings:
     default:
       - '127.0.0.1'
       - '::1'
+  lscache.probe.allowedHosts:
+    label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.probe.allowedHosts.label'
+    description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.probe.allowedHosts.description'
+    category: lscache.probe
+    type: stringlist
+    default: []
   lscache.audit.retentionDays:
     label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.audit.retentionDays.label'
     description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.audit.retentionDays.description'

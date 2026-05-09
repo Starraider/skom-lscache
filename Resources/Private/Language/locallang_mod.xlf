@@ -3,6 +3,10 @@
     <file source-language="en" datatype="plaintext" original="messages" date="2026-05-05" product-name="skom_lscache">
         <header/>
         <body>
+            <trans-unit id="mlang_tabs_tab"><source>LiteSpeed Cache</source></trans-unit>
+            <trans-unit id="mlang_labels_tabdescr"><source>Inspect purge activity and probe cache-hit status.</source></trans-unit>
+            <trans-unit id="mlang_labels_tablabel"><source>LiteSpeed Cache dashboard</source></trans-unit>
+
             <trans-unit id="settings.category.lscache"><source>LSCache</source></trans-unit>
             <trans-unit id="settings.category.lscache.autopurge"><source>Autopurge</source></trans-unit>
             <trans-unit id="settings.category.lscache.mirror"><source>Mirror</source></trans-unit>
@@ -10,6 +14,7 @@
             <trans-unit id="settings.category.lscache.vary"><source>Vary</source></trans-unit>
             <trans-unit id="settings.category.lscache.loopback"><source>Loopback</source></trans-unit>
             <trans-unit id="settings.category.lscache.audit"><source>Audit</source></trans-unit>
+            <trans-unit id="settings.category.lscache.probe"><source>Probe</source></trans-unit>
 
             <trans-unit id="settings.lscache.enabled.label"><source>Enable LSCache integration</source></trans-unit>
             <trans-unit id="settings.lscache.enabled.description"><source>Globally enables LSCache header emission and behavior for this site.</source></trans-unit>
@@ -41,6 +46,8 @@
             <trans-unit id="settings.lscache.loopback.rateLimit.description"><source>Maximum loopback purge requests per minute. Must be greater than 0.</source></trans-unit>
             <trans-unit id="settings.lscache.loopback.allowedRemoteAddrs.label"><source>Allowed loopback remote addresses</source></trans-unit>
             <trans-unit id="settings.lscache.loopback.allowedRemoteAddrs.description"><source>IP addresses allowed to call loopback purge endpoints.</source></trans-unit>
+            <trans-unit id="settings.lscache.probe.allowedHosts.label"><source>Additional allowed probe hosts</source></trans-unit>
+            <trans-unit id="settings.lscache.probe.allowedHosts.description"><source>Optional host allowlist for cache probes. The selected site host is always allowed.</source></trans-unit>
             <trans-unit id="settings.lscache.audit.retentionDays.label"><source>Audit retention days</source></trans-unit>
             <trans-unit id="settings.lscache.audit.retentionDays.description"><source>Retention period in days for LSCache audit log records.</source></trans-unit>
         </body>

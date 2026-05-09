@@ -17,9 +17,13 @@ use Skom\Lscache\Http\HeaderEmissionDecider;
 use Skom\Lscache\Http\HeaderWriter;
 use Skom\Lscache\Http\OpenLiteSpeedDetector;
 use Skom\Lscache\Http\TagSchema;
+use Skom\Lscache\Purge\Audit\PurgeAuditRequestContext;
+use Skom\Lscache\Purge\Audit\PurgeLogRepository;
+use Skom\Lscache\Purge\Audit\PurgeLogOutcome;
 use Skom\Lscache\Purge\PurgeHeaderSerializer;
 use Skom\Lscache\Purge\PurgeQueue;
 use Skom\Lscache\Purge\TagNamespaceResolverInterface;
+use Doctrine\DBAL\Exception as DbalException;
 use TYPO3\CMS\Core\Log\Channel;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -50,6 +54,8 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
         private TagNamespaceResolverInterface $tagNamespaceResolver,
         #[Channel('skom.lscache')]
         private LoggerInterface $logger,
+        private ?PurgeAuditRequestContext $auditRequestContext = null,
+        private ?PurgeLogRepository $purgeLogRepository = null,
     ) {}
 
     /**
@@ -107,7 +113,6 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
         ResponseInterface $response,
     ): ResponseInterface {
         $startedAt = microtime(true);
-        $requestId = $this->createRequestId();
 
         if ($response->getStatusCode() >= 500) {
             $this->logger->info('purge-flush', [
@@ -116,10 +121,16 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
                 'tagCount' => 0,
                 'outcome' => 'skipped',
                 'latencyMs' => (int)round((microtime(true) - $startedAt) * 1000),
-                'requestId' => $requestId,
             ]);
+            $this->auditRequestContext?->consumeRequestIds();
 
             return $response;
+        }
+
+        $auditRequestIds = $this->auditRequestContext?->peekRequestIds() ?? [];
+        $requestId = null;
+        if ($auditRequestIds !== [] && $this->purgeLogRepository !== null) {
+            $requestId = $this->createRequestId();
         }
 
         $serialized = $this->purgeHeaderSerializer->serialize(
@@ -131,16 +142,69 @@ final readonly class SkomLscacheMiddleware implements MiddlewareInterface
             $response = $response->withAddedHeader('X-LiteSpeed-Purge', $headerValue);
         }
 
-        $this->logger->info('purge-flush', [
+        $this->updatePurgeAuditOutcomes(
+            $site->getIdentifier(),
+            $serialized['outcome'],
+            $auditRequestIds,
+            (int)round((microtime(true) - $startedAt) * 1000),
+            $requestId,
+        );
+
+        $context = [
             'site' => $site->getIdentifier(),
             'source' => 'response-piggyback',
             'tagCount' => $serialized['tagCount'],
             'outcome' => $serialized['outcome'],
             'latencyMs' => (int)round((microtime(true) - $startedAt) * 1000),
-            'requestId' => $requestId,
-        ]);
+        ];
+        if ($requestId !== null) {
+            $context['requestId'] = $requestId;
+        }
+
+        $this->logger->info('purge-flush', $context);
 
         return $response;
+    }
+
+    /**
+     * @param list<string> $requestIds
+     */
+    private function updatePurgeAuditOutcomes(
+        string $siteIdentifier,
+        string $outcome,
+        array $requestIds,
+        int $latencyMs,
+        ?string $requestId,
+    ): void {
+        if ($requestIds === [] || $this->auditRequestContext === null) {
+            return;
+        }
+        if ($this->purgeLogRepository === null) {
+            $this->auditRequestContext->consumeRequestIds();
+            return;
+        }
+
+        try {
+            $updated = match ($outcome) {
+                PurgeLogOutcome::FLUSHED->value => $this->purgeLogRepository->markFlushedByRequestIds($requestIds, $latencyMs),
+                PurgeLogOutcome::TRUNCATED->value => $this->purgeLogRepository->markTruncatedByRequestIds($requestIds, $latencyMs),
+                PurgeLogOutcome::SKIPPED->value => $this->purgeLogRepository->markSkippedByRequestIds($requestIds, $latencyMs),
+                default => null,
+            };
+
+            if ($updated !== null) {
+                $this->auditRequestContext->consumeRequestIds();
+            }
+        } catch (DbalException) {
+            $this->logger->warning('audit-update-failed', [
+                'site' => $siteIdentifier,
+                'source' => 'response-piggyback',
+                'tagCount' => 0,
+                'outcome' => 'audit-update-failed',
+                'latencyMs' => $latencyMs,
+                'requestId' => $requestId ?? $this->createRequestId(),
+            ]);
+        }
     }
 
     /**

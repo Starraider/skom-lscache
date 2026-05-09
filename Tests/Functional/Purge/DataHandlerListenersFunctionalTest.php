@@ -256,6 +256,8 @@ rootPageId: 1
 settings:
   lscache:
     defaultTtl: 300
+    loopback:
+      rateLimit: 120
     tagNamespace: 'main'
     autopurge:
       dataHandler: %s

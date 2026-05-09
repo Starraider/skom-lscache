@@ -19,6 +19,8 @@ use Skom\Lscache\Http\HeaderWriter;
 use Skom\Lscache\Http\Middleware\SkomLscacheMiddleware;
 use Skom\Lscache\Http\OpenLiteSpeedDetector;
 use Skom\Lscache\Http\TagSchema;
+use Skom\Lscache\Purge\Audit\PurgeAuditRequestContext;
+use Skom\Lscache\Purge\Audit\PurgeLogRepository;
 use Skom\Lscache\Purge\PurgeHeaderSerializer;
 use Skom\Lscache\Purge\PurgeQueue;
 use Skom\Lscache\Purge\TagNamespaceResolverInterface;
@@ -113,6 +115,29 @@ final class SkomLscacheMiddlewareTest extends TestCase
         );
 
         self::assertFalse($response->hasHeader('X-LiteSpeed-Purge'));
+        self::assertSame(['main_page_55'], $queue->drain()->tags());
+    }
+
+    #[Test]
+    public function failedResponseClearsRecordedAuditRequestIds(): void
+    {
+        $queue = $this->createQueue();
+        $queue->enqueueTags(['main_page_55']);
+        $auditRequestContext = new PurgeAuditRequestContext();
+        $auditRequestContext->recordRequestId('request-123');
+
+        $middleware = $this->createMiddleware(
+            new CountingClassifier(CacheabilityDecision::cacheable()),
+            queue: $queue,
+            auditRequestContext: $auditRequestContext,
+        );
+
+        $middleware->process(
+            $this->createRequest(['lscache' => ['defaultTtl' => 900, 'tagNamespace' => 'siteA']]),
+            new FixedResponseHandler(new Response('php://temp', 503)),
+        );
+
+        self::assertTrue($auditRequestContext->isEmpty());
         self::assertSame(['main_page_55'], $queue->drain()->tags());
     }
 
@@ -249,6 +274,8 @@ final class SkomLscacheMiddlewareTest extends TestCase
         ?EventDispatcherInterface $eventDispatcher = null,
         ?InMemoryLogger $logger = null,
         ?PurgeQueue $queue = null,
+        ?PurgeAuditRequestContext $auditRequestContext = null,
+        ?PurgeLogRepository $purgeLogRepository = null,
     ): SkomLscacheMiddleware {
         $logger ??= new InMemoryLogger();
 
@@ -271,6 +298,8 @@ final class SkomLscacheMiddlewareTest extends TestCase
             new PurgeHeaderSerializer(),
             $namespaceResolver,
             $logger,
+            $auditRequestContext,
+            $purgeLogRepository,
         );
     }
 

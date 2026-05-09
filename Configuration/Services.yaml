@@ -28,6 +28,8 @@ services:
 
   Skom\Lscache\Http\CacheabilityClassifierInterface: '@Skom\Lscache\Http\CacheabilityClassifier'
 
+  Skom\Lscache\Backend\Probe\CacheProbeClientInterface: '@Skom\Lscache\Backend\Probe\CacheProbeClient'
+
   skom.lscache.cacheability_classifier:
     alias: Skom\Lscache\Http\CacheabilityClassifier
     public: true
