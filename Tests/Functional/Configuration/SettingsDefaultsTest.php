@@ -46,6 +46,7 @@ final class SettingsDefaultsTest extends FunctionalTestCase
             'lscache.loopback.secret',
             'lscache.loopback.rateLimit',
             'lscache.loopback.allowedRemoteAddrs',
+            'lscache.probe.allowedHosts',
             'lscache.audit.retentionDays',
         ];
 
@@ -71,6 +72,7 @@ final class SettingsDefaultsTest extends FunctionalTestCase
         self::assertSame([], $settings->get('lscache.vary.cookieAllowlist'));
         self::assertSame(120, $settings->get('lscache.loopback.rateLimit'));
         self::assertSame(['127.0.0.1', '::1'], $settings->get('lscache.loopback.allowedRemoteAddrs'));
+        self::assertSame([], $settings->get('lscache.probe.allowedHosts'));
         self::assertSame(7, $settings->get('lscache.audit.retentionDays'));
     }
 
