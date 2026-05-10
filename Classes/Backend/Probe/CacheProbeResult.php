@@ -59,16 +59,6 @@ final readonly class CacheProbeResult
         }
 
         $header = self::detectCacheHeader($response);
-        if (self::hasNotCacheableSignals($response, $statusCode)) {
-            return new self(
-                self::STATE_NOT_CACHEABLE,
-                $targetUrl,
-                $statusCode,
-                $header['name'] ?? null,
-                $header['value'] ?? null,
-            );
-        }
-
         if ($header !== null) {
             $classification = self::classifyHeaderValue($statusCode, $header['value']);
             if ($classification !== null) {
@@ -80,7 +70,19 @@ final readonly class CacheProbeResult
                     $header['value'],
                 );
             }
+        }
 
+        if (self::hasNotCacheableSignals($response, $statusCode)) {
+            return new self(
+                self::STATE_NOT_CACHEABLE,
+                $targetUrl,
+                $statusCode,
+                $header['name'] ?? null,
+                $header['value'] ?? null,
+            );
+        }
+
+        if ($header !== null) {
             return new self(
                 self::STATE_NOT_CACHEABLE,
                 $targetUrl,

@@ -31,6 +31,14 @@ final class CacheProbeResultTest extends TestCase
         );
 
         self::assertSame(
+            CacheProbeResult::STATE_HIT,
+            CacheProbeResult::fromResponse(
+                new Response(200, ['X-LiteSpeed-Cache' => 'HIT', 'Cache-Control' => 'private']),
+                'https://example.test/hit-private',
+            )->getState(),
+        );
+
+        self::assertSame(
             CacheProbeResult::STATE_MISS,
             CacheProbeResult::fromResponse(
                 new Response(200, ['X-LiteSpeed-Cache' => 'MISS']),
