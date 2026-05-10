@@ -32,12 +32,14 @@ final readonly class AuditLogFilter
         private array $siteIdentifiers,
         private array $sourceValues,
         private array $outcomeValues,
+        private ?string $requestId,
         private string $datePreset,
         private ?DateTimeImmutable $from,
         private ?DateTimeImmutable $to,
         private ?string $customFrom,
         private ?string $customTo,
         private bool $invalidDateRange,
+        private bool $invalidRequestId,
         private int $page,
         private int $perPage,
     ) {}
@@ -52,6 +54,7 @@ final readonly class AuditLogFilter
         $siteIdentifiers = self::normalizeStringList($payload['site'] ?? []);
         $sourceValues = self::normalizeStringList($payload['source'] ?? []);
         $outcomeValues = self::normalizeStringList($payload['outcome'] ?? []);
+        [$requestId, $invalidRequestId] = self::normalizeRequestId($payload['requestId'] ?? null);
 
         $datePreset = self::normalizeDatePreset((string)($payload['datePreset'] ?? 'last24h'));
         $customFrom = self::normalizeNullableString($payload['customFrom'] ?? null);
@@ -66,12 +69,14 @@ final readonly class AuditLogFilter
             $siteIdentifiers,
             $sourceValues,
             $outcomeValues,
+            $requestId,
             $datePreset,
             $from,
             $to,
             $customFrom,
             $customTo,
             $invalidDateRange,
+            $invalidRequestId,
             $page,
             $perPage,
         );
@@ -99,6 +104,11 @@ final readonly class AuditLogFilter
     public function getOutcomeValues(): array
     {
         return $this->outcomeValues;
+    }
+
+    public function getRequestId(): ?string
+    {
+        return $this->requestId;
     }
 
     public function getDatePreset(): string
@@ -129,6 +139,11 @@ final readonly class AuditLogFilter
     public function hasInvalidDateRange(): bool
     {
         return $this->invalidDateRange;
+    }
+
+    public function hasInvalidRequestId(): bool
+    {
+        return $this->invalidRequestId;
     }
 
     public function getPage(): int
@@ -165,6 +180,10 @@ final readonly class AuditLogFilter
             'outcome' => $this->outcomeValues,
             'datePreset' => $this->datePreset,
         ];
+
+        if ($this->requestId !== null) {
+            $query['requestId'] = $this->requestId;
+        }
 
         if ($this->datePreset === 'custom') {
             $query['customFrom'] = $this->customFrom ?? '';
@@ -225,6 +244,24 @@ final readonly class AuditLogFilter
         $normalized = trim((string)$value);
 
         return $normalized !== '' ? $normalized : null;
+    }
+
+    /**
+     * @param mixed $value
+     * @return array{0: ?string, 1: bool}
+     */
+    private static function normalizeRequestId(mixed $value): array
+    {
+        $normalized = self::normalizeNullableString($value);
+        if ($normalized === null) {
+            return [null, false];
+        }
+
+        if (preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i', $normalized) !== 1) {
+            return [null, true];
+        }
+
+        return [strtolower($normalized), false];
     }
 
     /**

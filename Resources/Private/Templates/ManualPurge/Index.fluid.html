@@ -1,0 +1,225 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <div class="lscache-manual-purge" data-manual-purge-root>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.heading" />
+                </h1>
+                <p class="text-body-secondary mb-0">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.description" />
+                </p>
+            </div>
+            <div class="text-body-secondary small text-md-end">
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
+                    </span>
+                    {manualPurge.selectedSiteLabel}
+                </div>
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
+                    </span>
+                    <code>{manualPurge.selectedSiteBaseUrl}</code>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link" href="{manualPurge.dashboardUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.dashboard" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{manualPurge.auditLogUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.auditLog" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{manualPurge.pageStatusUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.pageStatus" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{manualPurge.manualPurgeUrl}" aria-current="page">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.manualPurge" />
+                </a>
+            </li>
+        </ul>
+
+        <div class="row g-4">
+            <div class="col-12 col-xxl-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.page.heading" />
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-body-secondary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.page.description" />
+                        </p>
+                        <form action="{manualPurge.manualPurgeSubmitUrl}" method="post" class="vstack gap-3">
+                            <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
+                            <input type="hidden" name="scope" value="page" />
+
+                            <div>
+                                <label class="form-label" for="manual-purge-page-site">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
+                                </label>
+                                <select id="manual-purge-page-site" name="site" class="form-select">
+                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
+                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
+                                    </f:for>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label" for="manual-purge-page-uid">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.pageUid" />
+                                </label>
+                                <input
+                                    id="manual-purge-page-uid"
+                                    name="pageUid"
+                                    type="number"
+                                    min="1"
+                                    class="form-control"
+                                    required
+                                />
+                                <div class="form-text">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.pageUid.help" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.submit.page" />
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xxl-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.tags.heading" />
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-body-secondary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.tags.description" />
+                        </p>
+
+                        <f:if condition="{manualPurge.recentTagSuggestions}">
+                            <div class="mb-3">
+                                <div class="small text-body-secondary mb-2">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.tags.suggestions" />
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <f:for each="{manualPurge.recentTagSuggestions}" as="suggestedTag">
+                                        <span class="badge text-bg-light border"><code>{suggestedTag}</code></span>
+                                    </f:for>
+                                </div>
+                            </div>
+                        </f:if>
+
+                        <form action="{manualPurge.manualPurgeSubmitUrl}" method="post" class="vstack gap-3">
+                            <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
+                            <input type="hidden" name="scope" value="tags" />
+
+                            <div>
+                                <label class="form-label" for="manual-purge-tags-site">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
+                                </label>
+                                <select id="manual-purge-tags-site" name="site" class="form-select">
+                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
+                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
+                                    </f:for>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label" for="manual-purge-tags-input">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.tags" />
+                                </label>
+                                <textarea
+                                    id="manual-purge-tags-input"
+                                    name="tags"
+                                    class="form-control"
+                                    rows="5"
+                                    required
+                                    placeholder="main_page_42 main_site"
+                                ></textarea>
+                                <div class="form-text">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.tags.help" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.submit.tags" />
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xxl-4">
+                <div class="card h-100 border-danger-subtle">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0 text-danger-emphasis">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.site.heading" />
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-body-secondary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.scope.site.description" />
+                        </p>
+
+                        <form action="{manualPurge.manualPurgeSubmitUrl}" method="post" class="vstack gap-3">
+                            <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
+                            <input type="hidden" name="scope" value="site" />
+
+                            <div>
+                                <label class="form-label" for="manual-purge-site-site">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
+                                </label>
+                                <select id="manual-purge-site-site" name="site" class="form-select">
+                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
+                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
+                                    </f:for>
+                                </select>
+                            </div>
+
+                            <div class="form-check">
+                                <input id="manual-purge-site-confirm" class="form-check-input" type="checkbox" name="confirmSitePurge" value="1" required />
+                                <label class="form-check-label" for="manual-purge-site-confirm">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.confirmSitePurge" />
+                                </label>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-danger">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.submit.site" />
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</f:section>

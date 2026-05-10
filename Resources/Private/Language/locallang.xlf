@@ -40,6 +40,28 @@
             <trans-unit id="module.tab.dashboard"><source>Dashboard</source></trans-unit>
             <trans-unit id="module.tab.auditLog"><source>Audit Log</source></trans-unit>
             <trans-unit id="module.tab.pageStatus"><source>Page Status</source></trans-unit>
+            <trans-unit id="module.tab.manualPurge"><source>Manual Purge</source></trans-unit>
+
+            <trans-unit id="manualPurge.heading"><source>Manual Purge</source></trans-unit>
+            <trans-unit id="manualPurge.description"><source>Trigger immediate page, tag, or full-site purge requests from the backend module.</source></trans-unit>
+            <trans-unit id="manualPurge.scope.page.heading"><source>Purge Single Page</source></trans-unit>
+            <trans-unit id="manualPurge.scope.page.description"><source>Purge exactly one page tag inside the selected site namespace.</source></trans-unit>
+            <trans-unit id="manualPurge.scope.tags.heading"><source>Purge Tag Set</source></trans-unit>
+            <trans-unit id="manualPurge.scope.tags.description"><source>Purge one or more tags that belong to the selected site namespace.</source></trans-unit>
+            <trans-unit id="manualPurge.scope.site.heading"><source>Purge Entire Site</source></trans-unit>
+            <trans-unit id="manualPurge.scope.site.description"><source>Flush the entire selected site namespace. Use only for urgent recovery.</source></trans-unit>
+            <trans-unit id="manualPurge.form.site"><source>Site</source></trans-unit>
+            <trans-unit id="manualPurge.form.pageUid"><source>Page UID</source></trans-unit>
+            <trans-unit id="manualPurge.form.pageUid.help"><source>Use the page tree to identify the UID, then submit the purge.</source></trans-unit>
+            <trans-unit id="manualPurge.form.tags"><source>Tags</source></trans-unit>
+            <trans-unit id="manualPurge.form.tags.help"><source>Separate tags with spaces, commas, or line breaks.</source></trans-unit>
+            <trans-unit id="manualPurge.form.tags.suggestions"><source>Recent tags for this site</source></trans-unit>
+            <trans-unit id="manualPurge.form.confirmSitePurge"><source>I understand this purges all cache entries for the selected site.</source></trans-unit>
+            <trans-unit id="manualPurge.form.submit.page"><source>Purge Page</source></trans-unit>
+            <trans-unit id="manualPurge.form.submit.tags"><source>Purge Tags</source></trans-unit>
+            <trans-unit id="manualPurge.form.submit.site"><source>Purge Entire Site</source></trans-unit>
+            <trans-unit id="manualPurge.flash.success.title"><source>Manual purge queued</source></trans-unit>
+            <trans-unit id="manualPurge.flash.success.body"><source>Site %s | Scope %s | Request ID %s | Audit log %s</source></trans-unit>
 
             <trans-unit id="pageStatus.heading"><source>Page Status</source></trans-unit>
             <trans-unit id="pageStatus.description"><source>Run a dry cache classification for a specific page and compare it with recent purge history.</source></trans-unit>
@@ -110,6 +132,7 @@
             <trans-unit id="auditLog.filters.customFrom"><source>Custom from</source></trans-unit>
             <trans-unit id="auditLog.filters.customTo"><source>Custom to</source></trans-unit>
             <trans-unit id="auditLog.filters.perPage"><source>Rows per page</source></trans-unit>
+            <trans-unit id="auditLog.filters.requestId"><source>Request ID (exact match)</source></trans-unit>
             <trans-unit id="auditLog.filters.datePreset.lastHour"><source>Last hour</source></trans-unit>
             <trans-unit id="auditLog.filters.datePreset.last24h"><source>Last 24 hours</source></trans-unit>
             <trans-unit id="auditLog.filters.datePreset.last7d"><source>Last 7 days</source></trans-unit>

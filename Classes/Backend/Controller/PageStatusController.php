@@ -55,6 +55,9 @@ final readonly class PageStatusController
             'site' => $selectedSiteIdentifier,
             'pageUid' => $pageUid,
         ]));
+        $manualPurgeUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.manual-purge', [
+            'site' => $selectedSiteIdentifier,
+        ]);
         $probeEndpointUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.probe');
 
         $errorMessage = $pageUidState['invalid']
@@ -89,6 +92,7 @@ final readonly class PageStatusController
                 'dashboardUrl' => $dashboardUrl,
                 'auditLogUrl' => $auditLogUrl,
                 'pageStatusUrl' => $pageStatusUrl,
+                'manualPurgeUrl' => $manualPurgeUrl,
                 'probeEndpointUrl' => $probeEndpointUrl,
                 'selectedSiteIdentifier' => $selectedSiteIdentifier,
                 'selectedSiteLabel' => $selectedSiteLabel,

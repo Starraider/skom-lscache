@@ -51,7 +51,13 @@ final readonly class AuditLogController
         $dateRangeFilter = new PurgeLogDateRangeFilter($filter->getFrom(), $filter->getTo());
         $hasInvalidFilters = $this->hasInvalidFilters($filter);
 
-        $totalRows = $hasInvalidFilters ? 0 : $this->purgeLogRepository->countByFilters($siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter);
+        $totalRows = $hasInvalidFilters ? 0 : $this->purgeLogRepository->countByFilters(
+            $siteFilter,
+            $sourceFilter,
+            $outcomeFilter,
+            $dateRangeFilter,
+            $filter->getRequestId(),
+        );
         $totalPages = max(1, (int)ceil($totalRows / $filter->getPerPage()));
         $currentPage = min($filter->getPage(), $totalPages);
         $currentOffset = max(0, ($currentPage - 1) * $filter->getPerPage());
@@ -63,6 +69,7 @@ final readonly class AuditLogController
             $dateRangeFilter,
             $filter->getPerPage(),
             $currentOffset,
+            $filter->getRequestId(),
         );
 
         $currentQuery = $filter->toQueryParameters();
@@ -72,6 +79,9 @@ final readonly class AuditLogController
         $auditLogBaseUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log');
         $auditLogUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', $currentQuery);
         $pageStatusUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.page-status', [
+            'site' => $filter->getSiteIdentifiers()[0] ?? 'unknown',
+        ]);
+        $manualPurgeUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.manual-purge', [
             'site' => $filter->getSiteIdentifiers()[0] ?? 'unknown',
         ]);
         $resetUrl = $auditLogBaseUrl;
@@ -87,6 +97,7 @@ final readonly class AuditLogController
                 'auditLogBaseUrl' => $auditLogBaseUrl,
                 'auditLogUrl' => $auditLogUrl,
                 'pageStatusUrl' => $pageStatusUrl,
+                'manualPurgeUrl' => $manualPurgeUrl,
                 'resetUrl' => $resetUrl,
                 'exportUrl' => $exportUrl,
                 'exportWillTruncate' => $totalRows > self::EXPORT_CAP,
@@ -101,6 +112,7 @@ final readonly class AuditLogController
                     'datePreset' => $filter->getDatePreset(),
                     'customFrom' => $filter->getCustomFrom() ?? '',
                     'customTo' => $filter->getCustomTo() ?? '',
+                    'requestId' => $filter->getRequestId() ?? '',
                     'page' => $currentPage,
                     'perPage' => $filter->getPerPage(),
                     'perPageOptions' => $filter->getPerPageOptions(),
@@ -123,7 +135,13 @@ final readonly class AuditLogController
         $dateRangeFilter = new PurgeLogDateRangeFilter($filter->getFrom(), $filter->getTo());
         $hasInvalidFilters = $this->hasInvalidFilters($filter);
 
-        $totalRows = $hasInvalidFilters ? 0 : $this->purgeLogRepository->countByFilters($siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter);
+        $totalRows = $hasInvalidFilters ? 0 : $this->purgeLogRepository->countByFilters(
+            $siteFilter,
+            $sourceFilter,
+            $outcomeFilter,
+            $dateRangeFilter,
+            $filter->getRequestId(),
+        );
         $isTruncated = $totalRows > self::EXPORT_CAP;
         $rows = $hasInvalidFilters ? [] : $this->purgeLogRepository->findForCsvExport(
             $siteFilter,
@@ -131,6 +149,7 @@ final readonly class AuditLogController
             $outcomeFilter,
             $dateRangeFilter,
             self::EXPORT_CAP,
+            $filter->getRequestId(),
         );
 
         $csv = $this->buildCsv($rows, $isTruncated);
@@ -158,6 +177,10 @@ final readonly class AuditLogController
     private function hasInvalidFilters(AuditLogFilter $filter): bool
     {
         if ($filter->hasInvalidDateRange()) {
+            return true;
+        }
+
+        if ($filter->hasInvalidRequestId()) {
             return true;
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Skom\Lscache\Backend\Controller\AuditLogController;
 use Skom\Lscache\Backend\Controller\DashboardController;
+use Skom\Lscache\Backend\Controller\ManualPurgeController;
 use Skom\Lscache\Backend\Controller\PageStatusController;
 use Skom\Lscache\Backend\Controller\ProbeController;
 
@@ -32,6 +33,14 @@ return [
             'page-status' => [
                 'target' => PageStatusController::class . '::handleRequest',
                 'methods' => ['GET'],
+            ],
+            'manual-purge' => [
+                'target' => ManualPurgeController::class . '::handleRequest',
+                'methods' => ['GET'],
+            ],
+            'manual-purge-execute' => [
+                'target' => ManualPurgeController::class . '::submitRequest',
+                'methods' => ['POST'],
             ],
             'probe' => [
                 'target' => ProbeController::class . '::handleRequest',

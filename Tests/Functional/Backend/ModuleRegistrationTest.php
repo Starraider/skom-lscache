@@ -7,6 +7,7 @@ namespace Skom\Lscache\Tests\Functional\Backend;
 use PHPUnit\Framework\Attributes\Test;
 use Skom\Lscache\Backend\Controller\AuditLogController;
 use Skom\Lscache\Backend\Controller\DashboardController;
+use Skom\Lscache\Backend\Controller\ManualPurgeController;
 use Skom\Lscache\Backend\Controller\PageStatusController;
 use Skom\Lscache\Backend\Controller\ProbeController;
 use TYPO3\CMS\Backend\Module\ModuleInterface;
@@ -41,13 +42,19 @@ final class ModuleRegistrationTest extends AbstractBackendModuleTestCase
         self::assertArrayHasKey('audit-log', $routes);
         self::assertArrayHasKey('audit-log-export', $routes);
         self::assertArrayHasKey('page-status', $routes);
+        self::assertArrayHasKey('manual-purge', $routes);
+        self::assertArrayHasKey('manual-purge-execute', $routes);
         self::assertArrayHasKey('probe', $routes);
         self::assertSame(DashboardController::class . '::handleRequest', $routes['_default']['target']);
         self::assertSame(AuditLogController::class . '::handleRequest', $routes['audit-log']['target']);
         self::assertSame(AuditLogController::class . '::exportCsv', $routes['audit-log-export']['target']);
         self::assertSame(PageStatusController::class . '::handleRequest', $routes['page-status']['target']);
+        self::assertSame(ManualPurgeController::class . '::handleRequest', $routes['manual-purge']['target']);
+        self::assertSame(ManualPurgeController::class . '::submitRequest', $routes['manual-purge-execute']['target']);
         self::assertSame(ProbeController::class . '::handleRequest', $routes['probe']['target']);
         self::assertSame(['GET'], $routes['audit-log-export']['methods']);
+        self::assertSame(['GET'], $routes['manual-purge']['methods']);
+        self::assertSame(['POST'], $routes['manual-purge-execute']['methods']);
         self::assertSame(['POST'], $routes['probe']['methods']);
 
         /** @var LanguageServiceFactory $languageServiceFactory */

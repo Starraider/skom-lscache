@@ -40,6 +40,11 @@
                     <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.pageStatus" />
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{audit.manualPurgeUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.manualPurge" />
+                </a>
+            </li>
         </ul>
 
         <div class="card mb-4">
@@ -158,6 +163,23 @@
                                     <option value="{perPageOption}"{f:if(condition: perPageOption == audit.filters.perPage, then: ' selected="selected"')}>{perPageOption}</option>
                                 </f:for>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
+                            <label class="form-label" for="audit-request-id">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.filters.requestId" />
+                            </label>
+                            <input
+                                id="audit-request-id"
+                                class="form-control"
+                                type="text"
+                                name="requestId"
+                                value="{audit.filters.requestId}"
+                                placeholder="00000000-0000-4000-8000-000000000000"
+                                autocomplete="off"
+                            />
                         </div>
                     </div>
 
@@ -325,6 +347,7 @@
                         <input type="hidden" name="datePreset" value="{audit.filters.datePreset}" />
                         <input type="hidden" name="customFrom" value="{audit.filters.customFrom}" />
                         <input type="hidden" name="customTo" value="{audit.filters.customTo}" />
+                        <input type="hidden" name="requestId" value="{audit.filters.requestId}" />
                         <input type="hidden" name="perPage" value="{audit.filters.perPage}" />
                         <label class="small text-body-secondary mb-0" for="audit-jump-page">
                             <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:auditLog.pagination.jump" />

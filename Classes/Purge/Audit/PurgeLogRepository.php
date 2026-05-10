@@ -136,6 +136,7 @@ final readonly class PurgeLogRepository
         PurgeLogDateRangeFilter $dateRangeFilter,
         int $limit,
         int $offset,
+        ?string $requestId = null,
     ): array {
         if ($limit <= 0) {
             return [];
@@ -150,7 +151,7 @@ final readonly class PurgeLogRepository
             ->setMaxResults($limit)
             ->setFirstResult(max(0, $offset));
 
-        $this->applyFilterConstraints($queryBuilder, $siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter);
+        $this->applyFilterConstraints($queryBuilder, $siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter, $requestId);
 
         $rows = $queryBuilder
             ->executeQuery()
@@ -164,13 +165,14 @@ final readonly class PurgeLogRepository
         PurgeLogSourceFilter $sourceFilter,
         PurgeLogOutcomeFilter $outcomeFilter,
         PurgeLogDateRangeFilter $dateRangeFilter,
+        ?string $requestId = null,
     ): int {
         $queryBuilder = $this->createQueryBuilder();
         $queryBuilder
             ->count('*')
             ->from(self::TABLE);
 
-        $this->applyFilterConstraints($queryBuilder, $siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter);
+        $this->applyFilterConstraints($queryBuilder, $siteFilter, $sourceFilter, $outcomeFilter, $dateRangeFilter, $requestId);
 
         return (int)$queryBuilder->executeQuery()->fetchOne();
     }
@@ -184,6 +186,7 @@ final readonly class PurgeLogRepository
         PurgeLogOutcomeFilter $outcomeFilter,
         PurgeLogDateRangeFilter $dateRangeFilter,
         int $limit,
+        ?string $requestId = null,
     ): array {
         return $this->findByFilters(
             $siteFilter,
@@ -192,6 +195,7 @@ final readonly class PurgeLogRepository
             $dateRangeFilter,
             max(0, $limit),
             0,
+            $requestId,
         );
     }
 
@@ -334,6 +338,79 @@ final readonly class PurgeLogRepository
             );
 
         return $queryBuilder->executeStatement();
+    }
+
+    public function findNewestRequestIdByTrigger(string $siteIdentifier, PurgeSource $source, string $triggerRef): ?string
+    {
+        $siteIdentifier = trim($siteIdentifier);
+        $triggerRef = trim($triggerRef);
+        if ($siteIdentifier === '' || $triggerRef === '') {
+            return null;
+        }
+
+        $queryBuilder = $this->createQueryBuilder();
+        $requestId = $queryBuilder
+            ->select('request_id')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter($siteIdentifier)),
+                $queryBuilder->expr()->eq('source', $queryBuilder->createNamedParameter($source->value)),
+                $queryBuilder->expr()->eq('trigger_ref', $queryBuilder->createNamedParameter($triggerRef)),
+            )
+            ->orderBy('crdate', 'DESC')
+            ->addOrderBy('uid', 'DESC')
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchOne();
+
+        $requestId = is_string($requestId) ? trim($requestId) : '';
+
+        return $requestId !== '' ? $requestId : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function findRecentTagsBySite(string $siteIdentifier, int $limit = 16): array
+    {
+        $siteIdentifier = trim($siteIdentifier);
+        if ($siteIdentifier === '' || $limit <= 0) {
+            return [];
+        }
+
+        $scanLimit = min(max($limit * 32, $limit), 512);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $rows = $queryBuilder
+            ->select('tags')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter($siteIdentifier)),
+            )
+            ->orderBy('crdate', 'DESC')
+            ->addOrderBy('uid', 'DESC')
+            ->setMaxResults($scanLimit)
+            ->executeQuery()
+            ->fetchFirstColumn();
+
+        $tags = [];
+        foreach ($rows as $rawTags) {
+            foreach ($this->decodeStringList((string)$rawTags) as $tag) {
+                $tag = trim($tag);
+                if ($tag === '' || isset($tags[$tag])) {
+                    continue;
+                }
+
+                $tags[$tag] = true;
+                if (count($tags) >= $limit) {
+                    return array_keys($tags);
+                }
+            }
+        }
+
+        return array_keys($tags);
     }
 
     /**
@@ -497,6 +574,7 @@ final readonly class PurgeLogRepository
         PurgeLogSourceFilter $sourceFilter,
         PurgeLogOutcomeFilter $outcomeFilter,
         PurgeLogDateRangeFilter $dateRangeFilter,
+        ?string $requestId = null,
     ): void {
         $constraints = [
             $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
@@ -540,6 +618,14 @@ final readonly class PurgeLogRepository
             $constraints[] = $queryBuilder->expr()->lte(
                 'crdate',
                 $queryBuilder->createNamedParameter($dateRangeFilter->getTo()->getTimestamp(), Connection::PARAM_INT),
+            );
+        }
+
+        $requestId = trim((string)$requestId);
+        if ($requestId !== '') {
+            $constraints[] = $queryBuilder->expr()->eq(
+                'request_id',
+                $queryBuilder->createNamedParameter($requestId),
             );
         }
 
@@ -588,5 +674,31 @@ final readonly class PurgeLogRepository
         }
 
         return $purgeLogRows;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function decodeStringList(string $json): array
+    {
+        try {
+            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $values = [];
+        foreach ($decoded as $value) {
+            if (!is_string($value)) {
+                continue;
+            }
+            $values[] = $value;
+        }
+
+        return $values;
     }
 }

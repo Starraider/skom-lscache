@@ -124,6 +124,36 @@ final class AuditLogControllerTest extends AbstractBackendModuleTestCase
     }
 
     #[Test]
+    public function requestIdFilterMatchesExactlyOneRow(): void
+    {
+        $now = time();
+        $requestIdMatch = '11111111-1111-4111-8111-111111111111';
+        $requestIdOther = '22222222-2222-4222-8222-222222222222';
+
+        $this->insertAuditRow('main', $requestIdMatch, $now - 10, PurgeLogOutcome::ENQUEUED, PurgeSource::MODULE, ['main_page_42'], [], 'manual:1');
+        $this->insertAuditRow('main', $requestIdOther, $now - 20, PurgeLogOutcome::ENQUEUED, PurgeSource::MODULE, ['main_page_43'], [], 'manual:2');
+        $this->createBackendUser('de');
+
+        /** @var AuditLogController $controller */
+        $controller = $this->get(AuditLogController::class);
+        $response = $controller->handleRequest($this->createBackendRequest(
+            [
+                'site' => ['main'],
+                'requestId' => $requestIdMatch,
+                'datePreset' => 'last7d',
+            ],
+            '/typo3/module/web/lscache/audit-log',
+            'web_SkomLscacheCache.audit-log',
+        ));
+        $html = (string)$response->getBody();
+        $xpath = $this->createXPath($html);
+
+        self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-row])'));
+        self::assertSame($requestIdMatch, trim((string)$xpath->evaluate('string((//*[@data-audit-row])[1]/@data-audit-row)')));
+        self::assertSame(1, (int)$xpath->evaluate(sprintf('count(//*[@id="audit-request-id" and @value="%s"])', $requestIdMatch)));
+    }
+
+    #[Test]
     public function exportsCsvWithTenThousandRowCap(): void
     {
         $this->seedRowsForCsvExport();
