@@ -35,11 +35,13 @@ final readonly class PurgeLogRow
      */
     public static function fromDatabaseRow(array $row): self
     {
+        $source = self::normalizeSource((string)($row['source'] ?? ''));
+
         return new self(
             (int)($row['uid'] ?? 0),
             (int)($row['crdate'] ?? 0),
             self::normalizeSiteIdentifier($row['site_identifier'] ?? ''),
-            PurgeSource::from((string)($row['source'] ?? '')),
+            PurgeSource::from($source),
             self::normalizeNullableString($row['trigger_ref'] ?? null),
             self::decodeStringList($row['tags'] ?? '[]', 'tags'),
             self::decodeStringList($row['urls'] ?? '[]', 'urls'),
@@ -66,6 +68,16 @@ final readonly class PurgeLogRow
         $siteIdentifier = trim((string)$value);
 
         return $siteIdentifier !== '' ? $siteIdentifier : 'unknown';
+    }
+
+    private static function normalizeSource(string $source): string
+    {
+        $source = trim($source);
+        if ($source === 'cache_flush_event') {
+            return PurgeSource::CACHE_FLUSH_EVENT->value;
+        }
+
+        return $source;
     }
 
     /**

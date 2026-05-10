@@ -62,9 +62,9 @@ final class ModuleRegistrationTest extends AbstractBackendModuleTestCase
         $english = $languageServiceFactory->create('en');
         $german = $languageServiceFactory->create('de');
 
-        self::assertSame('LiteSpeed Cache', $english->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:mlang_tabs_tab'));
-        self::assertSame('LiteSpeed Cache dashboard', $english->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:mlang_labels_tablabel'));
-        self::assertSame('Purge-Aktivität prüfen und Cache-Hit-Status kontrollieren.', $german->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:mlang_labels_tabdescr'));
-        self::assertSame('LiteSpeed-Cache-Dashboard', $german->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:mlang_labels_tablabel'));
+        self::assertSame('LiteSpeed Cache', $english->sL('skom_lscache.mod:mlang_tabs_tab'));
+        self::assertSame('LiteSpeed Cache dashboard', $english->sL('skom_lscache.mod:mlang_labels_tablabel'));
+        self::assertSame('Purge-Aktivität prüfen und Cache-Hit-Status kontrollieren.', $german->sL('skom_lscache.mod:mlang_labels_tabdescr'));
+        self::assertSame('LiteSpeed-Cache-Dashboard', $german->sL('skom_lscache.mod:mlang_labels_tablabel'));
     }
 }

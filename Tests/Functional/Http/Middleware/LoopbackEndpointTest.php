@@ -26,7 +26,12 @@ final class LoopbackEndpointTest extends FunctionalTestCase
         'typo3conf/ext/skom_lscache',
     ];
 
-    private function createLoopbackRequest(array $body, string $secret, string $remoteAddr = '127.0.0.1'): ServerRequest
+    private function createLoopbackRequest(
+        array $body,
+        string $secret,
+        string $remoteAddr = '127.0.0.1',
+        string $siteIdentifier = 'test-site',
+    ): ServerRequest
     {
         $jsonBody = json_encode($body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         $signature = hash_hmac('sha256', $jsonBody, $secret);
@@ -46,7 +51,7 @@ final class LoopbackEndpointTest extends FunctionalTestCase
         $request->getBody()->write($jsonBody);
 
         $site = new Site(
-            'test-site',
+            $siteIdentifier,
             1,
             ['base' => 'https://example.org/', 'languages' => []],
             SiteSettings::createFromSettingsTree([
@@ -157,14 +162,15 @@ final class LoopbackEndpointTest extends FunctionalTestCase
     public function testRateLimitingEnforced(): void
     {
         $middleware = $this->get(LoopbackEndpointMiddleware::class);
+        $siteIdentifier = 'rate-limit-test-site';
         $body = [
-            'site' => 'test-site',
+            'site' => $siteIdentifier,
             'requestId' => 'req-rl',
             'timestamp' => time(),
             'payload' => ['tags' => [], 'urls' => [], 'fullSiteFlushes' => []],
         ];
 
-        $request = $this->createLoopbackRequest($body, 'test-secret');
+        $request = $this->createLoopbackRequest($body, 'test-secret', '127.0.0.1', $siteIdentifier);
 
         for ($i = 0; $i < 120; $i++) {
             $response = $middleware->process($request, new FunctionalDummyRequestHandler());

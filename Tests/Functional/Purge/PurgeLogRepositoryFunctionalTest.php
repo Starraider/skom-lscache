@@ -78,6 +78,32 @@ final class PurgeLogRepositoryFunctionalTest extends FunctionalTestCase
         ));
     }
 
+    #[Test]
+    public function legacyCacheFlushEventSourceValueIsMappedForHydration(): void
+    {
+        /** @var PurgeLogRepository $repository */
+        $repository = $this->get(PurgeLogRepository::class);
+        $repository->purgeOlderThan(new DateTimeImmutable('@32503680000'));
+
+        $connection = $this->get(ConnectionPool::class)->getConnectionForTable('tx_skomlscache_purge_log');
+        $this->insertRow($connection, [
+            'crdate' => 500,
+            'site_identifier' => 'main',
+            'source' => 'cache_flush_event',
+            'outcome' => PurgeLogOutcome::ENQUEUED->value,
+            'request_id' => 'request-legacy',
+            'tags' => [],
+            'urls' => [],
+            'tag_count' => 0,
+            'trigger_ref' => 'cache-flush-event:pages',
+        ]);
+
+        $rows = $repository->findRecentBySite('main', 10, 0);
+        self::assertCount(1, $rows);
+        self::assertSame(PurgeSource::CACHE_FLUSH_EVENT, $rows[0]->source);
+        self::assertSame('request-legacy', $rows[0]->requestId);
+    }
+
     private function seedRows(): void
     {
         /** @var PurgeLogRepository $repository */

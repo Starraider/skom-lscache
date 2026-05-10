@@ -179,6 +179,6 @@ final readonly class ProbeController
 
     private function translate(LanguageService $languageService, string $key): string
     {
-        return $languageService->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:' . $key);
+        return $languageService->sL('skom_lscache.messages:' . $key);
     }
 }

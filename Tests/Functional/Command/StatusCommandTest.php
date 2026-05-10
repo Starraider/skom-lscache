@@ -99,21 +99,21 @@ YAML,
     {
         $this->writeSiteConfiguration(true, 'main', 'https://example.test/', 300);
         $this->writeSiteConfiguration(false, 'other', 'https://other.test/', 600);
-        
+
         $this->seedPurgeLog('main', 0);
         $this->seedPurgeLog('main', 2);
-        
+
         $tester = $this->executeCommand([]);
 
         self::assertSame(0, $tester->getStatusCode());
-        
+
         $output = $tester->getDisplay();
-        
+
         // main site
         self::assertStringContainsString('main', $output);
         self::assertStringContainsString('Yes', $output); // Enabled
         self::assertStringContainsString('300s', $output); // defaultTtl
-        
+
         // other site
         self::assertStringContainsString('other', $output);
         self::assertStringContainsString('No', $output); // Enabled
@@ -125,7 +125,7 @@ YAML,
     {
         $this->writeSiteConfiguration(true, 'main', 'https://example.test/', 300);
         $this->writeSiteConfiguration(false, 'other', 'https://other.test/', 600);
-        
+
         $tester = $this->executeCommand(['--site' => 'main']);
 
         self::assertSame(0, $tester->getStatusCode());

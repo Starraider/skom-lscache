@@ -29,6 +29,7 @@ final readonly class ManualPurgeController
 {
     private const string FORM_NAME = 'web_SkomLscacheCache.manual-purge';
     private const string FORM_ACTION = 'execute';
+    private const string BACKEND_USER_ATTRIBUTE = 'backend.user';
 
     public function __construct(
         private PageRenderer $pageRenderer,
@@ -391,8 +392,8 @@ final readonly class ManualPurgeController
 
     private function resolveBackendUsername(ServerRequestInterface $request): string
     {
-        $backendUser = null;
-        if (($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication) {
+        $backendUser = $request->getAttribute(self::BACKEND_USER_ATTRIBUTE);
+        if (!$backendUser instanceof BackendUserAuthentication && ($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication) {
             $backendUser = $GLOBALS['BE_USER'];
         }
 
@@ -413,6 +414,6 @@ final readonly class ManualPurgeController
 
     private function translate(LanguageService $languageService, string $key): string
     {
-        return $languageService->sL('LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:' . $key);
+        return $languageService->sL('skom_lscache.messages:' . $key);
     }
 }

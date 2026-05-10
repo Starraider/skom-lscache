@@ -63,7 +63,7 @@ final class PurgeAuditListenerFunctionalTest extends FunctionalTestCase
 
                         public function insert(string $tableName, array $data, array $types = []): int
                         {
-                            throw new class('forced failure') extends \RuntimeException implements \Doctrine\DBAL\Exception {
+                            throw new class('forced failure', 7350633865) extends \RuntimeException implements \Doctrine\DBAL\Exception {
                             };
                         }
                     };

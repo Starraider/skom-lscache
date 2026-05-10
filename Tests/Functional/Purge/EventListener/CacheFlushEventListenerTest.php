@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Skom\Lscache\Tests\Functional\Purge\EventListener;
 
 use PHPUnit\Framework\Attributes\Test;
+use Skom\Lscache\Purge\Audit\PurgeAuditRequestContext;
 use Skom\Lscache\Purge\Audit\PurgeLogRepository;
 use Skom\Lscache\Purge\EventListener\CacheFlushEventListener;
 use Skom\Lscache\Purge\LoopbackDispatcher;
@@ -37,7 +38,7 @@ final class CacheFlushEventListenerTest extends FunctionalTestCase
             $this->get(SiteFinder::class),
             $this->get(PurgeServiceInterface::class),
             $this->get(LoopbackDispatcher::class),
-            $this->get(PurgeLogRepository::class),
+            $this->get(PurgeAuditRequestContext::class),
         );
     }
 
@@ -190,6 +191,26 @@ YAML,
         );
 
         self::assertNotNull($requestId, 'A request ID must exist for the trigger cache-flush-event:pages,system');
+    }
+
+    #[Test]
+    public function triggerRefRemainsBoundedForLongGroupLists(): void
+    {
+        $this->writeSiteConfig('siteA', true, true);
+        $this->refreshSiteFinder();
+
+        $groups = ['pages'];
+        for ($i = 0; $i < 48; $i++) {
+            $groups[] = 'extremely-long-cache-group-name-' . str_repeat((string)($i % 10), 8) . '-' . $i;
+        }
+
+        ($this->subject())(new CacheFlushEvent($groups));
+
+        $rows = $this->get(PurgeLogRepository::class)->findRecentBySite('siteA', 1, 0);
+        self::assertCount(1, $rows);
+        self::assertNotNull($rows[0]->triggerRef);
+        self::assertLessThanOrEqual(255, strlen((string)$rows[0]->triggerRef));
+        self::assertStringStartsWith('cache-flush-event:', (string)$rows[0]->triggerRef);
     }
 
     // ─── AC 4: missing secret → fail-fast via configuration validator ────────
