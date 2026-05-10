@@ -17,11 +17,11 @@ final readonly class LoopbackDispatcher
         private LoggerInterface $logger,
     ) {}
 
-    public function dispatch(PurgePayload $payload, Site $site, string $requestId): void
+    public function dispatch(PurgePayload $payload, Site $site, string $requestId): bool
     {
         $settings = $site->getSettings();
         if (!(bool)$settings->get('lscache.enabled', true)) {
-            return;
+            return false;
         }
 
         $secret = trim((string)$settings->get('lscache.loopback.secret', ''));
@@ -31,7 +31,7 @@ final readonly class LoopbackDispatcher
                 'requestId' => $requestId,
                 'reason' => 'Secret not configured',
             ]);
-            return;
+            return false;
         }
 
         $baseUri = (string)$site->getBase();
@@ -53,7 +53,7 @@ final readonly class LoopbackDispatcher
                 'reason' => 'JSON encoding failed',
                 'exception' => $e->getMessage(),
             ]);
-            return;
+            return false;
         }
 
         $signature = hash_hmac('sha256', $bodyJson, $secret);
@@ -80,6 +80,7 @@ final readonly class LoopbackDispatcher
                     'reason' => 'Non-200 response',
                     'statusCode' => $response->getStatusCode(),
                 ]);
+                return false;
             }
         } catch (\Throwable $e) {
             $this->logger->info('loopback-dispatch-error', [
@@ -89,6 +90,9 @@ final readonly class LoopbackDispatcher
                 'reason' => 'HTTP request failed',
                 'exception' => $e->getMessage(),
             ]);
+            return false;
         }
+
+        return true;
     }
 }
