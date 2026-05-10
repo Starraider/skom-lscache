@@ -22,7 +22,7 @@ class StatusCommand extends Command
     public function __construct(
         private readonly SiteFinder $siteFinder,
         private readonly PurgeLogRepository $purgeLogRepository,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
     }

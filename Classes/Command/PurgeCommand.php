@@ -17,7 +17,9 @@ class PurgeCommand extends Command
 {
     public function __construct(
         private readonly SiteFinder $siteFinder,
-        private readonly LoopbackDispatcher $loopbackDispatcher
+        private readonly LoopbackDispatcher $loopbackDispatcher,
+        private readonly \Skom\Lscache\Purge\PurgeServiceInterface $purgeService,
+        private readonly \Skom\Lscache\Purge\Audit\PurgeLogRepository $purgeLogRepository
     ) {
         parent::__construct();
     }
@@ -104,7 +106,21 @@ class PurgeCommand extends Command
             return Command::SUCCESS;
         }
 
-        $requestId = 'cli-' . bin2hex(random_bytes(6));
+        $argvHash = md5(serialize($input->getArguments()) . serialize($input->getOptions()));
+        $triggerRef = 'cli:lscache:purge:' . $argvHash;
+
+        if ($isAll) {
+            $this->purgeService->purgeFullSite($siteIdentifier, \Skom\Lscache\Purge\Enum\PurgeSource::CLI, $triggerRef);
+        } else {
+            $this->purgeService->purgeTags($tags, \Skom\Lscache\Purge\Enum\PurgeSource::CLI, $triggerRef, $siteIdentifier);
+        }
+
+        $requestId = $this->purgeLogRepository->findNewestRequestIdByTrigger($siteIdentifier, \Skom\Lscache\Purge\Enum\PurgeSource::CLI, $triggerRef);
+        if ($requestId === null) {
+            $errOutput->writeln('<error>Failed to retrieve requestId from audit log.</error>');
+            return Command::FAILURE;
+        }
+
         $success = $this->loopbackDispatcher->dispatch($payloadObj, $site, $requestId);
 
         if (!$success) {

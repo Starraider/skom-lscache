@@ -123,9 +123,11 @@ YAML,
     }
 
     #[Test]
-    public function commandExits2OnLoopbackFailure(): void
+    public function commandExits2OnLoopbackFailureAndLogsAuditRow(): void
     {
         $this->writeSiteConfiguration(true, 'test-secret');
+        $repo = $this->get(PurgeLogRepository::class);
+        $countBefore = $repo->countBySite('main');
 
         // It should try to contact https://example.test/ and fail
         $tester = $this->executeCommand(['--site' => 'main', '--tags' => 'main_page_42']);
@@ -134,6 +136,9 @@ YAML,
 
         $output = $tester->getDisplay() . $tester->getErrorOutput();
         self::assertStringNotContainsString('test-secret', $output, 'NFR-S2: Secret must never be printed');
+
+        $countAfter = $repo->countBySite('main');
+        self::assertSame($countBefore + 1, $countAfter, 'An audit log row must be generated before loopback failure.');
     }
 }
 
