@@ -38,6 +38,11 @@ services:
     alias: Skom\Lscache\Http\TagSchema
     public: true
 
+  Skom\Lscache\Purge\EventListener\CacheFlushEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'lscache-cache-flush-mirror'
+
   Skom\Lscache\Purge\EventListener\DataHandlerTagResolver:
     public: true
   Skom\Lscache\Purge\EventListener\DataHandlerRecordSavedListener:

@@ -11,5 +11,5 @@ enum PurgeSource: string
     case CLI = 'cli';
     case MODULE = 'module';
     case API = 'api';
-    case CACHE_FLUSH_EVENT = 'cache_flush_event';
+    case CACHE_FLUSH_EVENT = 'cache-flush-event';
 }

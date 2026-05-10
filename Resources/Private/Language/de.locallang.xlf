@@ -155,7 +155,7 @@
             <trans-unit id="source.cli"><source>CLI</source><target>CLI</target></trans-unit>
             <trans-unit id="source.module"><source>Backend module</source><target>Backend-Modul</target></trans-unit>
             <trans-unit id="source.api"><source>API</source><target>API</target></trans-unit>
-            <trans-unit id="source.cache_flush_event"><source>Cache flush event</source><target>CacheFlushEvent</target></trans-unit>
+            <trans-unit id="source.cache-flush-event"><source>Cache flush event</source><target>CacheFlushEvent</target></trans-unit>
 
             <trans-unit id="outcome.enqueued"><source>Enqueued</source><target>Enqueued</target></trans-unit>
             <trans-unit id="outcome.flushed"><source>Flushed</source><target>Gepusht</target></trans-unit>

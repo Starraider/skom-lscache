@@ -391,8 +391,8 @@ final readonly class ManualPurgeController
 
     private function resolveBackendUsername(ServerRequestInterface $request): string
     {
-        $backendUser = $request->getAttribute('backend.user');
-        if (!$backendUser instanceof BackendUserAuthentication && ($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication) {
+        $backendUser = null;
+        if (($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication) {
             $backendUser = $GLOBALS['BE_USER'];
         }
 

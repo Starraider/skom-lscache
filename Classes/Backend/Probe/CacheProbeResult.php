@@ -130,6 +130,7 @@ final readonly class CacheProbeResult
             'statusCode' => $this->statusCode,
             'headerName' => $this->headerName,
             'headerValue' => $this->headerValue,
+            'errorType' => $this->errorType,
         ];
     }
 
