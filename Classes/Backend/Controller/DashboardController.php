@@ -48,6 +48,9 @@ final readonly class DashboardController
         $auditLogUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', [
             'site' => [$selectedSiteIdentifier],
         ]);
+        $pageStatusUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.page-status', [
+            'site' => $selectedSiteIdentifier,
+        ]);
         $probeEndpointUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.probe');
 
         $viewModel = new DashboardViewModel(
@@ -69,6 +72,7 @@ final readonly class DashboardController
         return $view
             ->assign('dashboard', $viewModel)
             ->assign('auditLogUrl', $auditLogUrl)
+            ->assign('pageStatusUrl', $pageStatusUrl)
             ->renderResponse('Dashboard/Index');
     }
 

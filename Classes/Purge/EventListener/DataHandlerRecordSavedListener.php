@@ -38,7 +38,12 @@ final readonly class DataHandlerRecordSavedListener
             return;
         }
 
-        $this->purgeService->purgeTags($tags, PurgeSource::DATAHANDLER, sprintf('datahandler:save:%s:%d', $table, $recordUid));
+        $this->purgeService->purgeTags(
+            $tags,
+            PurgeSource::DATAHANDLER,
+            sprintf('datahandler:save:%s:%d', $table, $recordUid),
+            $this->tagResolver->resolveSingleSiteIdentifierForPageIds([$pid]),
+        );
     }
 
     /** @param int|string $id */

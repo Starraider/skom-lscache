@@ -1,0 +1,314 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <div class="lscache-page-status" data-page-status-root>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.heading" />
+                </h1>
+                <p class="text-body-secondary mb-0">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.description" />
+                </p>
+            </div>
+            <div class="text-body-secondary small text-md-end">
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
+                    </span>
+                    {pageStatus.selectedSiteLabel}
+                </div>
+                <div>
+                    <span class="fw-semibold">
+                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
+                    </span>
+                    <code>{pageStatus.selectedSiteBaseUrl}</code>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link" href="{pageStatus.dashboardUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.dashboard" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{pageStatus.auditLogUrl}">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.auditLog" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{pageStatus.pageStatusUrl}" aria-current="page">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:module.tab.pageStatus" />
+                </a>
+            </li>
+        </ul>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{pageStatus.pageStatusUrl}" method="get" class="row g-3 align-items-end">
+                    <div class="col-12 col-lg-4">
+                        <label for="page-status-site" class="form-label">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.site" />
+                        </label>
+                        <select id="page-status-site" name="site" class="form-select">
+                            <f:for each="{pageStatus.siteOptions}" as="siteOption">
+                                <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
+                            </f:for>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="page-status-page-uid" class="form-label">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.pageUid" />
+                        </label>
+                        <input
+                            id="page-status-page-uid"
+                            name="pageUid"
+                            type="number"
+                            min="1"
+                            class="form-control"
+                            value="{pageStatus.requestedPageUid}"
+                            required
+                        />
+                        <div class="form-text">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.pageUid.help" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4 d-flex justify-content-lg-end">
+                        <button type="submit" class="btn btn-primary">
+                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.submit" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <f:if condition="{pageStatus.error}">
+            <div class="alert alert-danger mb-4" data-page-status-error>
+                <div class="fw-semibold mb-1">
+                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.error.title" />
+                </div>
+                <p class="mb-0">{pageStatus.error}</p>
+            </div>
+        </f:if>
+
+        <f:if condition="{pageStatus.result}">
+            <div class="row g-4">
+                <div class="col-12 col-xl-6">
+                    <div class="card h-100 mb-4">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.decision.heading" />
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <span class="fw-semibold">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.page" />:
+                                </span>
+                                {pageStatus.result.pageTitle}
+                                <code>#{pageStatus.result.pageUid}</code>
+                            </p>
+                            <p class="mb-2">
+                                <span class="fw-semibold">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.cacheable" />:
+                                </span>
+                                <span data-page-status-cacheable="{f:if(condition: pageStatus.result.cacheable, then: 1, else: 0)}">
+                                    <f:if condition="{pageStatus.result.cacheable}">
+                                        <f:then>
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.boolean.yes" />
+                                        </f:then>
+                                        <f:else>
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.boolean.no" />
+                                        </f:else>
+                                    </f:if>
+                                </span>
+                            </p>
+                            <p class="mb-2">
+                                <span class="fw-semibold">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.reason" />:
+                                </span>
+                                <span data-page-status-reason>{pageStatus.result.reason}</span>
+                                <span class="text-body-secondary">({pageStatus.result.reasonLabel})</span>
+                            </p>
+                            <p class="mb-0">
+                                <span class="fw-semibold">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.matchedRule" />:
+                                </span>
+                                <f:if condition="{pageStatus.result.matchedRule}">
+                                    <f:then><code>{pageStatus.result.matchedRule}</code></f:then>
+                                    <f:else><span class="text-body-secondary">-</span></f:else>
+                                </f:if>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.heading" />
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-body-secondary">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.description" />
+                            </p>
+                            <form
+                                action="{pageStatus.probeEndpointUrl}"
+                                method="post"
+                                class="d-flex flex-wrap align-items-center gap-2 mb-3"
+                                data-cache-probe-form
+                                data-loading-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.loading')}"
+                                data-http-error-title="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.state.http-error.title')}"
+                                data-network-error-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.error.network')}"
+                                data-unexpected-error-label="{f:translate(key: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.error.unexpected')}"
+                            >
+                                <input type="hidden" name="site" value="{pageStatus.result.siteIdentifier}" data-cache-probe-site />
+                                <input type="hidden" name="target" value="{pageStatus.result.probeTargetUrl}" data-cache-probe-target />
+                                <span class="small text-body-secondary">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.target" />:
+                                    <code data-page-status-probe-target="{pageStatus.result.probeTargetUrl}">{pageStatus.result.probeTargetUrl}</code>
+                                </span>
+                                <button type="submit" class="btn btn-primary btn-sm" data-cache-probe-submit>
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.button" />
+                                </button>
+                            </form>
+                            <div aria-live="polite" aria-atomic="true" data-cache-probe-result>
+                                <div class="alert alert-info mb-0">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <core:icon identifier="actions-info-circle" />
+                                        <div>
+                                            <div class="fw-semibold">
+                                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.placeholder.title" />
+                                            </div>
+                                            <p class="mb-0">
+                                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:probe.placeholder.message" />
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.ttl.heading" />
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="display-6 fw-semibold" data-page-status-ttl>{pageStatus.result.effectiveTtl}</div>
+                            <p class="text-body-secondary mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.ttl.description" />
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.tags.heading" />
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <f:translate
+                                    key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.tags.cap"
+                                    arguments="{0: pageStatus.result.tagCount, 1: pageStatus.result.originalTagCount}"
+                                />
+                            </p>
+                            <f:if condition="{pageStatus.result.truncated}">
+                                <div class="alert alert-warning py-2">
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.tags.truncated" />
+                                </div>
+                            </f:if>
+                            <ul class="mb-3">
+                                <f:for each="{pageStatus.result.tags}" as="tag">
+                                    <li><code data-page-status-tag="{tag}">{tag}</code></li>
+                                </f:for>
+                            </ul>
+                            <ul class="small mb-0">
+                                <li data-page-status-tag-prefix="page">
+                                    <strong><code>{pageStatus.result.tagNamespace}_page_*</code></strong>:
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.tagPrefix.page" />
+                                </li>
+                                <li data-page-status-tag-prefix="record">
+                                    <strong><code>{pageStatus.result.tagNamespace}_record_*</code></strong>:
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.tagPrefix.record" />
+                                </li>
+                                <li data-page-status-tag-prefix="site">
+                                    <strong><code>{pageStatus.result.tagNamespace}_site</code></strong>:
+                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.tagPrefix.site" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0">
+                                <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.recent.heading" />
+                            </h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <f:if condition="{pageStatus.recentRows}">
+                                <f:then>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.timestamp" /></th>
+                                                    <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.request" /></th>
+                                                    <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.source" /></th>
+                                                    <th><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.outcome" /></th>
+                                                    <th class="text-end"><f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.recent.columns.tags" /></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <f:for each="{pageStatus.recentRows}" as="row">
+                                                    <tr data-page-status-recent-row="{row.requestId}">
+                                                        <td class="text-nowrap">
+                                                            <time><f:format.date format="Y-m-d H:i">{row.crdate}</f:format.date></time>
+                                                        </td>
+                                                        <td><code>{row.requestId}</code></td>
+                                                        <td>{row.sourceLabel}</td>
+                                                        <td>
+                                                            <span class="d-inline-flex align-items-center gap-1 text-{row.outcomeStatusClass}">
+                                                                <core:icon identifier="{row.outcomeIconIdentifier}" size="small" />
+                                                                <span class="fw-semibold">{row.outcomeLabel}</span>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end">{row.tagCount}</td>
+                                                    </tr>
+                                                </f:for>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </f:then>
+                                <f:else>
+                                    <div class="p-4">
+                                        <div class="alert alert-secondary mb-0">
+                                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.recent.empty" />
+                                        </div>
+                                    </div>
+                                </f:else>
+                            </f:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </f:if>
+    </div>
+</f:section>
+
+</html>

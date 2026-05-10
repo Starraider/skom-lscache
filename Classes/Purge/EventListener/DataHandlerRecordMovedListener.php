@@ -41,7 +41,12 @@ final readonly class DataHandlerRecordMovedListener
             return;
         }
 
-        $this->purgeService->purgeTags($tags, PurgeSource::DATAHANDLER, sprintf('datahandler:move:%s:%d', $table, $recordUid));
+        $this->purgeService->purgeTags(
+            $tags,
+            PurgeSource::DATAHANDLER,
+            sprintf('datahandler:move:%s:%d', $table, $recordUid),
+            $this->tagResolver->resolveSingleSiteIdentifierForPageIds([$oldPid, $newPid]),
+        );
     }
 
     private function fetchPid(string $table, int $uid): int

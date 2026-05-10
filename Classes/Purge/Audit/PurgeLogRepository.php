@@ -101,6 +101,32 @@ final readonly class PurgeLogRepository
     }
 
     /**
+     * @param list<string> $tags
+     * @return list<PurgeLogRow>
+     */
+    public function findRecentBySiteTouchingAnyTag(string $siteIdentifier, array $tags, int $limit = 5): array
+    {
+        $siteIdentifier = trim($siteIdentifier);
+        if ($siteIdentifier === '' || $limit <= 0) {
+            return [];
+        }
+
+        $tags = array_values(array_unique(array_filter(
+            array_map(static fn (string $tag): string => trim($tag), $tags),
+            static fn (string $tag): bool => $tag !== '',
+        )));
+        if ($tags === []) {
+            return [];
+        }
+
+        try {
+            return $this->findRecentBySiteTouchingAnyTagWithJsonContains($siteIdentifier, $tags, $limit);
+        } catch (\Throwable) {
+            return $this->findRecentBySiteTouchingAnyTagWithFallback($siteIdentifier, $tags, $limit);
+        }
+    }
+
+    /**
      * @return list<PurgeLogRow>
      */
     public function findByFilters(
@@ -375,6 +401,76 @@ final readonly class PurgeLogRepository
         $queryBuilder->getRestrictions()->removeAll();
 
         return $queryBuilder;
+    }
+
+    /**
+     * @param list<string> $tags
+     * @return list<PurgeLogRow>
+     */
+    private function findRecentBySiteTouchingAnyTagWithJsonContains(string $siteIdentifier, array $tags, int $limit): array
+    {
+        $queryBuilder = $this->createQueryBuilder();
+        $queryBuilder
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter($siteIdentifier)),
+            )
+            ->orderBy('crdate', 'DESC')
+            ->addOrderBy('uid', 'DESC')
+            ->setMaxResults($limit);
+
+        $jsonMatchClauses = [];
+        foreach ($tags as $index => $tag) {
+            $parameterName = 'jsonTag' . $index;
+            $queryBuilder->setParameter(
+                $parameterName,
+                json_encode([$tag], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
+            );
+            $jsonMatchClauses[] = 'JSON_CONTAINS(tags, :' . $parameterName . ", '$') = 1";
+        }
+
+        $queryBuilder->andWhere('(' . implode(' OR ', $jsonMatchClauses) . ')');
+
+        return $this->mapRows($queryBuilder->executeQuery()->fetchAllAssociative());
+    }
+
+    /**
+     * @param list<string> $tags
+     * @return list<PurgeLogRow>
+     */
+    private function findRecentBySiteTouchingAnyTagWithFallback(string $siteIdentifier, array $tags, int $limit): array
+    {
+        $scanLimit = min(max($limit * 40, $limit), 400);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $rows = $queryBuilder
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('site_identifier', $queryBuilder->createNamedParameter($siteIdentifier)),
+            )
+            ->orderBy('crdate', 'DESC')
+            ->addOrderBy('uid', 'DESC')
+            ->setMaxResults($scanLimit)
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $matches = [];
+        foreach ($this->mapRows($rows) as $row) {
+            if (array_intersect($row->tags, $tags) === []) {
+                continue;
+            }
+
+            $matches[] = $row;
+            if (count($matches) >= $limit) {
+                break;
+            }
+        }
+
+        return $matches;
     }
 
     private function normalizeSiteIdentifier(string $siteIdentifier): string

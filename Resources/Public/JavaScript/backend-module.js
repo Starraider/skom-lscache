@@ -96,7 +96,7 @@ function initializeProbeForms(context = document) {
         }
         form.dataset.boundProbe = '1';
 
-        const resultContainer = form.querySelector(SELECTORS.result);
+        const resultContainer = form.querySelector(SELECTORS.result) ?? form.parentElement?.querySelector(SELECTORS.result);
         const submitButton = form.querySelector(SELECTORS.submit);
         const siteInput = form.querySelector(SELECTORS.site);
         const targetInput = form.querySelector(SELECTORS.target);

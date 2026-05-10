@@ -52,6 +52,28 @@ final readonly class DataHandlerTagResolver
         return array_keys($tags);
     }
 
+    /**
+     * @param list<int> $pageIds
+     */
+    public function resolveSingleSiteIdentifierForPageIds(array $pageIds): ?string
+    {
+        $siteIdentifiers = [];
+        foreach (array_values(array_unique(array_filter($pageIds, static fn (int $pageId): bool => $pageId > 0))) as $pageId) {
+            $site = $this->resolveSite($pageId);
+            if ($site === null) {
+                continue;
+            }
+
+            $siteIdentifiers[$site->getIdentifier()] = true;
+        }
+
+        if (count($siteIdentifiers) !== 1) {
+            return null;
+        }
+
+        return array_key_first($siteIdentifiers);
+    }
+
     private function isAutoPurgeEnabled(SiteSettings $siteSettings): bool
     {
         return (bool)$siteSettings->get('lscache.autopurge.dataHandler', true);

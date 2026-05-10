@@ -12,7 +12,7 @@ interface PurgeServiceInterface
     /**
      * @param list<string> $tags
      */
-    public function purgeTags(array $tags, PurgeSource $source, ?string $triggerRef = null): void;
+    public function purgeTags(array $tags, PurgeSource $source, ?string $triggerRef = null, ?string $siteIdentifier = null): void;
 
     public function purgeUrl(string $url, PurgeSource $source, ?string $triggerRef = null): void;
 

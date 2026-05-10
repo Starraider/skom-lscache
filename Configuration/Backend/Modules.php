@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Skom\Lscache\Backend\Controller\AuditLogController;
 use Skom\Lscache\Backend\Controller\DashboardController;
+use Skom\Lscache\Backend\Controller\PageStatusController;
 use Skom\Lscache\Backend\Controller\ProbeController;
 
 return [
@@ -16,6 +17,7 @@ return [
         'path' => '/module/web/lscache',
         'iconIdentifier' => 'module-skom-lscache',
         'labels' => 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf',
+        'navigationComponent' => '@typo3/backend/tree/page-tree-element',
         'routes' => [
             '_default' => [
                 'target' => DashboardController::class . '::handleRequest',
@@ -25,6 +27,10 @@ return [
             ],
             'audit-log-export' => [
                 'target' => AuditLogController::class . '::exportCsv',
+                'methods' => ['GET'],
+            ],
+            'page-status' => [
+                'target' => PageStatusController::class . '::handleRequest',
                 'methods' => ['GET'],
             ],
             'probe' => [

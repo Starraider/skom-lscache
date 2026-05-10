@@ -20,19 +20,20 @@ final readonly class PurgeService implements PurgeServiceInterface
         private LoggerInterface $logger,
     ) {}
 
-    public function purgeTags(array $tags, PurgeSource $source, ?string $triggerRef = null): void
+    public function purgeTags(array $tags, PurgeSource $source, ?string $triggerRef = null, ?string $siteIdentifier = null): void
     {
         $startedAt = microtime(true);
         $validatedTags = $this->validateTags($tags);
         $validatedTriggerRef = $this->validateTriggerRef($triggerRef);
+        $validatedSiteIdentifier = $siteIdentifier !== null ? $this->validateSiteIdentifier($siteIdentifier) : null;
         $requestId = $this->createRequestId();
         $timestamp = time();
 
         $this->purgeQueue->enqueueTags($validatedTags);
         try {
-            $this->eventDispatcher->dispatch(new PurgeIssuedEvent(null, $source, $validatedTags, [], $validatedTriggerRef, $requestId, $timestamp));
+            $this->eventDispatcher->dispatch(new PurgeIssuedEvent($validatedSiteIdentifier, $source, $validatedTags, [], $validatedTriggerRef, $requestId, $timestamp));
         } finally {
-            $this->logEnqueued(null, $source, count($validatedTags), $startedAt, $requestId);
+            $this->logEnqueued($validatedSiteIdentifier, $source, count($validatedTags), $startedAt, $requestId);
         }
     }
 

@@ -71,6 +71,9 @@ final readonly class AuditLogController
         $dashboardUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache');
         $auditLogBaseUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log');
         $auditLogUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', $currentQuery);
+        $pageStatusUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.page-status', [
+            'site' => $filter->getSiteIdentifiers()[0] ?? 'unknown',
+        ]);
         $resetUrl = $auditLogBaseUrl;
         $exportUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log-export', $filter->toQueryParameters(false));
 
@@ -83,6 +86,7 @@ final readonly class AuditLogController
                 'dashboardUrl' => $dashboardUrl,
                 'auditLogBaseUrl' => $auditLogBaseUrl,
                 'auditLogUrl' => $auditLogUrl,
+                'pageStatusUrl' => $pageStatusUrl,
                 'resetUrl' => $resetUrl,
                 'exportUrl' => $exportUrl,
                 'exportWillTruncate' => $totalRows > self::EXPORT_CAP,

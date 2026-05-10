@@ -34,6 +34,11 @@ final readonly class DataHandlerRecordDeletedListener
             return;
         }
 
-        $this->purgeService->purgeTags($tags, PurgeSource::DATAHANDLER, sprintf('datahandler:delete:%s:%d', $table, $uid));
+        $this->purgeService->purgeTags(
+            $tags,
+            PurgeSource::DATAHANDLER,
+            sprintf('datahandler:delete:%s:%d', $table, $uid),
+            $this->tagResolver->resolveSingleSiteIdentifierForPageIds([$pid]),
+        );
     }
 }
