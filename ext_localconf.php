@@ -21,3 +21,8 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['proc
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][
     \Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener::class
 ] = \Skom\Lscache\Purge\EventListener\DataHandlerRecordMovedListener::class;
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['skom_lscache_loopback'] ??= [
+    'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
+    'backend' => \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class,
+];
