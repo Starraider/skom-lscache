@@ -113,9 +113,7 @@ settings:
     description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.loopback.allowedRemoteAddrs.description'
     category: lscache.loopback
     type: stringlist
-    default:
-      - '127.0.0.1'
-      - '::1'
+    default: []
   lscache.probe.allowedHosts:
     label: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.probe.allowedHosts.label'
     description: 'LLL:EXT:skom_lscache/Resources/Private/Language/locallang_mod.xlf:settings.lscache.probe.allowedHosts.description'

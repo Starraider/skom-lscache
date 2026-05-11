@@ -31,6 +31,8 @@ final class LoopbackEndpointTest extends FunctionalTestCase
         string $secret,
         string $remoteAddr = '127.0.0.1',
         string $siteIdentifier = 'test-site',
+        array $allowedRemoteAddrs = ['127.0.0.1'],
+        int $rateLimit = 120,
     ): ServerRequest
     {
         $jsonBody = json_encode($body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
@@ -59,8 +61,8 @@ final class LoopbackEndpointTest extends FunctionalTestCase
                     'enabled' => true,
                     'loopback' => [
                         'secret' => 'test-secret',
-                        'allowedRemoteAddrs' => ['127.0.0.1'],
-                        'rateLimit' => 120,
+                        'allowedRemoteAddrs' => $allowedRemoteAddrs,
+                        'rateLimit' => $rateLimit,
                     ],
                 ]
             ]),
@@ -144,6 +146,21 @@ final class LoopbackEndpointTest extends FunctionalTestCase
         self::assertSame(403, $response->getStatusCode());
     }
 
+    public function testEndpointAllowsAnyRemoteIpWhenAllowlistIsEmpty(): void
+    {
+        $middleware = $this->get(LoopbackEndpointMiddleware::class);
+        $body = [
+            'site' => 'test-site',
+            'requestId' => 'req-empty-allowlist',
+            'timestamp' => time(),
+            'payload' => ['tags' => [], 'urls' => [], 'fullSiteFlushes' => []],
+        ];
+
+        $request = $this->createLoopbackRequest($body, 'test-secret', '192.168.1.1', 'test-site', []);
+        $response = $middleware->process($request, new FunctionalDummyRequestHandler());
+        self::assertSame(200, $response->getStatusCode());
+    }
+
     public function testEndpointRejectsMismatchedSite(): void
     {
         $middleware = $this->get(LoopbackEndpointMiddleware::class);
@@ -170,9 +187,9 @@ final class LoopbackEndpointTest extends FunctionalTestCase
             'payload' => ['tags' => [], 'urls' => [], 'fullSiteFlushes' => []],
         ];
 
-        $request = $this->createLoopbackRequest($body, 'test-secret', '127.0.0.1', $siteIdentifier);
+        $request = $this->createLoopbackRequest($body, 'test-secret', '127.0.0.1', $siteIdentifier, ['127.0.0.1'], 2);
 
-        for ($i = 0; $i < 120; $i++) {
+        for ($i = 0; $i < 2; $i++) {
             $response = $middleware->process($request, new FunctionalDummyRequestHandler());
             self::assertSame(200, $response->getStatusCode());
         }
