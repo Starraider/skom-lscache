@@ -160,7 +160,7 @@ final class DataHandlerListenersFunctionalTest extends FunctionalTestCase
 
     private function createDataHandlerMock(): DataHandler
     {
-        $mock = $this->createMock(DataHandler::class);
+        $mock = $this->createStub(DataHandler::class);
         $mock->substNEWwithIDs = [];
 
         return $mock;

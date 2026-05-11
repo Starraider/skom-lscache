@@ -8,6 +8,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Skom\Lscache\Purge\Audit\PurgeLogRepository;
 use Skom\Lscache\Purge\Enum\PurgeSource;
+use Skom\Lscache\Purge\LoopbackDispatcher;
+use Skom\Lscache\Purge\PurgePayload;
 use Skom\Lscache\Purge\PurgeServiceInterface;
 use Skom\Lscache\Purge\SiteTagNamespaceResolver;
 use TYPO3\CMS\Backend\Attribute\AsController;
@@ -42,6 +44,7 @@ final readonly class ManualPurgeController
         private PurgeServiceInterface $purgeService,
         private SiteTagNamespaceResolver $siteTagNamespaceResolver,
         private PurgeLogRepository $purgeLogRepository,
+        private LoopbackDispatcher $loopbackDispatcher,
     ) {}
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
@@ -113,6 +116,7 @@ final readonly class ManualPurgeController
 
         $requestId = null;
         $scopeLabel = '';
+        $purgePayload = null;
 
         if ($scope === 'page') {
             $pageUidState = $this->parsePositiveInt($payload['pageUid'] ?? null);
@@ -126,6 +130,7 @@ final readonly class ManualPurgeController
             $triggerRef = sprintf('module:manual-purge:page:%d:be_user:%s', $pageUid, $backendUsername);
             $this->purgeService->purgeTags([$pageTag], PurgeSource::MODULE, $triggerRef, $siteIdentifier);
             $requestId = $this->purgeLogRepository->findNewestRequestIdByTrigger($siteIdentifier, PurgeSource::MODULE, $triggerRef);
+            $purgePayload = new PurgePayload([$pageTag], [], []);
             $scopeLabel = 'page:' . $pageUid;
         } elseif ($scope === 'tags') {
             $tags = $this->parseTags((string)($payload['tags'] ?? ''));
@@ -144,6 +149,7 @@ final readonly class ManualPurgeController
             $triggerRef = sprintf('module:manual-purge:tags:be_user:%s', $backendUsername);
             $this->purgeService->purgeTags($tags, PurgeSource::MODULE, $triggerRef, $siteIdentifier);
             $requestId = $this->purgeLogRepository->findNewestRequestIdByTrigger($siteIdentifier, PurgeSource::MODULE, $triggerRef);
+            $purgePayload = new PurgePayload($tags, [], []);
             $scopeLabel = 'tags:' . count($tags);
         } elseif ($scope === 'site') {
             $confirmation = trim((string)($payload['confirmSitePurge'] ?? ''));
@@ -154,6 +160,7 @@ final readonly class ManualPurgeController
             $triggerRef = sprintf('module:manual-purge:site:be_user:%s', $backendUsername);
             $this->purgeService->purgeFullSite($siteIdentifier, PurgeSource::MODULE, $triggerRef);
             $requestId = $this->purgeLogRepository->findNewestRequestIdByTrigger($siteIdentifier, PurgeSource::MODULE, $triggerRef);
+            $purgePayload = new PurgePayload([], [], [$siteIdentifier]);
             $scopeLabel = 'site';
         } else {
             return $this->createBadRequestResponse();
@@ -161,6 +168,12 @@ final readonly class ManualPurgeController
 
         if ($requestId === null) {
             return $this->createBadRequestResponse();
+        }
+
+        $startedAt = microtime(true);
+        $dispatchSucceeded = $this->loopbackDispatcher->dispatch($purgePayload, $site, $requestId);
+        if (!$dispatchSucceeded) {
+            $this->purgeLogRepository->markFailedByRequestIds([$requestId], (int)round((microtime(true) - $startedAt) * 1000));
         }
 
         $languageService = $this->languageServiceFactory->createForBackendUser();
@@ -173,18 +186,33 @@ final readonly class ManualPurgeController
         ]);
 
         $view = $this->moduleTemplateFactory->create($request);
-        $view->addFlashMessage(
-            sprintf(
-                $this->translate($languageService, 'manualPurge.flash.success.body'),
-                $siteIdentifier,
-                $scopeLabel,
-                $requestId,
-                $auditDeepLink,
-            ),
-            $this->translate($languageService, 'manualPurge.flash.success.title'),
-            ContextualFeedbackSeverity::OK,
-            true,
-        );
+        if ($dispatchSucceeded) {
+            $view->addFlashMessage(
+                sprintf(
+                    $this->translate($languageService, 'manualPurge.flash.success.body'),
+                    $siteIdentifier,
+                    $scopeLabel,
+                    $requestId,
+                    $auditDeepLink,
+                ),
+                $this->translate($languageService, 'manualPurge.flash.success.title'),
+                ContextualFeedbackSeverity::OK,
+                true,
+            );
+        } else {
+            $view->addFlashMessage(
+                sprintf(
+                    $this->translate($languageService, 'manualPurge.flash.failure.body'),
+                    $siteIdentifier,
+                    $scopeLabel,
+                    $requestId,
+                    $auditDeepLink,
+                ),
+                $this->translate($languageService, 'manualPurge.flash.failure.title'),
+                ContextualFeedbackSeverity::ERROR,
+                true,
+            );
+        }
 
         return new Response('php://temp', 303, [
             'Location' => $manualPurgeUrl,

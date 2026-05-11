@@ -62,6 +62,8 @@
             <trans-unit id="manualPurge.form.submit.site"><source>Purge Entire Site</source><target>Gesamte Site purgen</target></trans-unit>
             <trans-unit id="manualPurge.flash.success.title"><source>Manual purge queued</source><target>Manueller Purge eingereiht</target></trans-unit>
             <trans-unit id="manualPurge.flash.success.body"><source>Site %s | Scope %s | Request ID %s | Audit log %s</source><target>Site %s | Scope %s | Request-ID %s | Audit-Log %s</target></trans-unit>
+            <trans-unit id="manualPurge.flash.failure.title"><source>Manual purge failed</source><target>Manueller Purge fehlgeschlagen</target></trans-unit>
+            <trans-unit id="manualPurge.flash.failure.body"><source>Site %s | Scope %s | Request ID %s | Audit log %s</source><target>Site %s | Scope %s | Request-ID %s | Audit-Log %s</target></trans-unit>
 
             <trans-unit id="pageStatus.heading"><source>Page Status</source><target>Seitenstatus</target></trans-unit>
             <trans-unit id="pageStatus.description"><source>Run a dry cache classification for a specific page and compare it with recent purge history.</source><target>Führe eine trockene Cache-Klassifizierung für eine konkrete Seite aus und vergleiche sie mit den letzten Purges.</target></trans-unit>
