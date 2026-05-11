@@ -16,10 +16,12 @@ return [
         'skom/lscache/loopback-endpoint' => [
             'target' => \Skom\Lscache\Http\Middleware\LoopbackEndpointMiddleware::class,
             'after' => [
-                'skom/lscache/response-header',
+                'typo3/cms-frontend/site',
             ],
             'before' => [
-                'typo3/cms-frontend/prepare-tsfe-rendering',
+                'typo3/cms-frontend/base-redirect-resolver',
+                'typo3/cms-frontend/static-route-resolver',
+                'typo3/cms-frontend/page-resolver',
             ],
         ],
     ],
