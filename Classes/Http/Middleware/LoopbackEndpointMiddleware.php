@@ -9,8 +9,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Skom\Lscache\Purge\Audit\PurgeAuditRequestContext;
+use Skom\Lscache\Purge\PurgeHeaderSerializer;
 use Skom\Lscache\Purge\PurgePayload;
 use Skom\Lscache\Purge\PurgeQueue;
+use Skom\Lscache\Purge\TagNamespaceResolverInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Http\Response;
@@ -24,7 +26,9 @@ class LoopbackEndpointMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly PurgeQueue $purgeQueue,
         private readonly PurgeAuditRequestContext $auditRequestContext,
-        CacheManager $cacheManager
+        private readonly PurgeHeaderSerializer $purgeHeaderSerializer,
+        private readonly TagNamespaceResolverInterface $tagNamespaceResolver,
+        CacheManager $cacheManager,
     ) {
         $this->loopbackCache = $cacheManager->getCache('skom_lscache_loopback');
     }
@@ -118,14 +122,26 @@ class LoopbackEndpointMiddleware implements MiddlewareInterface
 
         $this->auditRequestContext->recordRequestId($body['requestId']);
 
+        // Drain the PurgeQueue and serialize into X-LiteSpeed-Purge headers.
+        // The SkomLscacheMiddleware is positioned after this middleware in the stack
+        // and never runs on loopback requests, so we must emit purge headers here.
+        $serialized = $this->purgeHeaderSerializer->serialize(
+            $this->purgeQueue->drain(),
+            fn (string $siteIdentifier): string => $this->tagNamespaceResolver->resolveForSite($siteIdentifier),
+        );
+
         $response = new Response('php://temp', 200, ['Content-Type' => 'application/json']);
+        foreach ($serialized['headers'] as $headerValue) {
+            $response = $response->withAddedHeader('X-LiteSpeed-Purge', $headerValue);
+        }
+
         $responseBody = json_encode([
             'requestId' => $body['requestId'],
-            'outcome' => 'loopback-dispatched',
-            'tagCount' => count($tags),
+            'outcome' => $serialized['outcome'],
+            'tagCount' => $serialized['tagCount'],
         ]);
         $response->getBody()->write((string)$responseBody);
-        
+
         return $response;
     }
 
