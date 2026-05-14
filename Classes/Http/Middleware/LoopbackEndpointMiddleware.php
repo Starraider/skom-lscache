@@ -8,14 +8,19 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Skom\Lscache\Purge\Audit\PurgeAuditRequestContext;
+use Skom\Lscache\Purge\Audit\PurgeLogOutcome;
+use Skom\Lscache\Purge\Audit\PurgeLogRepository;
 use Skom\Lscache\Purge\PurgeHeaderSerializer;
 use Skom\Lscache\Purge\PurgePayload;
 use Skom\Lscache\Purge\PurgeQueue;
 use Skom\Lscache\Purge\TagNamespaceResolverInterface;
+use Doctrine\DBAL\Exception as DbalException;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Log\Channel;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteSettings;
 
@@ -28,6 +33,9 @@ class LoopbackEndpointMiddleware implements MiddlewareInterface
         private readonly PurgeAuditRequestContext $auditRequestContext,
         private readonly PurgeHeaderSerializer $purgeHeaderSerializer,
         private readonly TagNamespaceResolverInterface $tagNamespaceResolver,
+        private readonly ?PurgeLogRepository $purgeLogRepository,
+        #[Channel('skom.lscache')]
+        private readonly LoggerInterface $logger,
         CacheManager $cacheManager,
     ) {
         $this->loopbackCache = $cacheManager->getCache('skom_lscache_loopback');
@@ -35,6 +43,8 @@ class LoopbackEndpointMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $startedAt = microtime(true);
+
         if ($request->getUri()->getPath() !== '/_lscache/purge') {
             return $handler->handle($request);
         }
@@ -142,7 +152,57 @@ class LoopbackEndpointMiddleware implements MiddlewareInterface
         ]);
         $response->getBody()->write((string)$responseBody);
 
+        $latencyMs = (int)round((microtime(true) - $startedAt) * 1000);
+        $this->updatePurgeAuditOutcome(
+            $site->getIdentifier(),
+            $serialized['outcome'],
+            $body['requestId'],
+            $latencyMs,
+        );
+
+        $this->logger->info('loopback-dispatched', [
+            'site' => $site->getIdentifier(),
+            'requestId' => $body['requestId'],
+            'outcome' => $serialized['outcome'],
+            'tagCount' => $serialized['tagCount'],
+            'latencyMs' => $latencyMs,
+        ]);
+
         return $response;
+    }
+
+    private function updatePurgeAuditOutcome(
+        string $siteIdentifier,
+        string $outcome,
+        string $requestId,
+        int $latencyMs,
+    ): void {
+        if ($this->purgeLogRepository === null) {
+            $this->auditRequestContext->consumeRequestIds();
+            return;
+        }
+
+        try {
+            $updated = match ($outcome) {
+                PurgeLogOutcome::FLUSHED->value => $this->purgeLogRepository->markFlushedByRequestIds([$requestId], $latencyMs),
+                PurgeLogOutcome::TRUNCATED->value => $this->purgeLogRepository->markTruncatedByRequestIds([$requestId], $latencyMs),
+                PurgeLogOutcome::SKIPPED->value => $this->purgeLogRepository->markSkippedByRequestIds([$requestId], $latencyMs),
+                default => null,
+            };
+
+            if ($updated !== null) {
+                $this->auditRequestContext->consumeRequestIds();
+            }
+        } catch (DbalException) {
+            $this->logger->warning('audit-update-failed', [
+                'site' => $siteIdentifier,
+                'source' => 'loopback',
+                'tagCount' => 0,
+                'outcome' => 'audit-update-failed',
+                'latencyMs' => $latencyMs,
+                'requestId' => $requestId,
+            ]);
+        }
     }
 
     /**
