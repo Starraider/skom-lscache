@@ -18,7 +18,7 @@ lscache:
   loopback:
     secret: '%env(LSCACHE_LOOPBACK_SECRET)%'
     rateLimit: 120
-    allowedRemoteAddrs: ['167.235.201.149']
+    allowedRemoteAddrs: ['127.0.0.1', '::1', '167.235.201.149']
   probe:
     allowedHosts: []
   audit:
