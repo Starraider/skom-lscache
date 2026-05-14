@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 #[AsController]
 final readonly class PageStatusController
 {
+    use SiteSelectorMenuTrait;
     public function __construct(
         private PageRenderer $pageRenderer,
         private UriBuilder $uriBuilder,
@@ -42,6 +43,16 @@ final readonly class PageStatusController
         $selectedSiteIdentifier = $this->resolveSelectedSiteIdentifier($request, $sites);
         $selectedSite = $this->resolveSelectedSite($selectedSiteIdentifier, $sites);
         $selectedSiteLabel = $this->resolveSiteLabel($selectedSiteIdentifier, $selectedSite, $languageService);
+
+        $this->registerSiteSelectorMenu(
+            $view,
+            $sites,
+            $selectedSiteIdentifier,
+            $request,
+            $this->uriBuilder,
+            $languageService,
+        );
+
         $pageUidState = $this->resolveRequestedPageUid($request);
         $pageUid = $pageUidState['pageUid'];
 

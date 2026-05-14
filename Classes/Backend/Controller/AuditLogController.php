@@ -29,6 +29,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 #[AsController]
 final readonly class AuditLogController
 {
+    use SiteSelectorMenuTrait;
     private const int EXPORT_CAP = 10000;
 
     public function __construct(
@@ -44,8 +45,10 @@ final readonly class AuditLogController
     {
         $languageService = $this->languageServiceFactory->createForBackendUser();
         $filter = $this->resolveFilter($request);
+        $sites = $this->siteFinder->getAllSites();
+        $selectedSiteIdentifier = $this->resolveSelectedSiteIdentifier($request, $filter, $sites);
 
-        $siteFilter = new PurgeLogSiteFilter($filter->getSiteIdentifiers());
+        $siteFilter = new PurgeLogSiteFilter([$selectedSiteIdentifier]);
         $sourceFilter = new PurgeLogSourceFilter($this->resolveSourceFilters($filter->getSourceValues()));
         $outcomeFilter = new PurgeLogOutcomeFilter($this->resolveOutcomeFilters($filter->getOutcomeValues()));
         $dateRangeFilter = new PurgeLogDateRangeFilter($filter->getFrom(), $filter->getTo());
@@ -72,22 +75,37 @@ final readonly class AuditLogController
             $filter->getRequestId(),
         );
 
-        $currentQuery = $filter->toQueryParameters();
+        $currentQuery = $this->buildAuditQuery($filter, $selectedSiteIdentifier);
         $currentQuery['page'] = $currentPage;
 
-        $dashboardUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache');
-        $auditLogBaseUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log');
+        $dashboardUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache', [
+            'site' => $selectedSiteIdentifier,
+        ]);
+        $auditLogBaseUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', [
+            'site' => $selectedSiteIdentifier,
+        ]);
         $auditLogUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', $currentQuery);
         $pageStatusUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.page-status', [
-            'site' => $filter->getSiteIdentifiers()[0] ?? 'unknown',
+            'site' => $selectedSiteIdentifier,
         ]);
         $manualPurgeUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.manual-purge', [
-            'site' => $filter->getSiteIdentifiers()[0] ?? 'unknown',
+            'site' => $selectedSiteIdentifier,
         ]);
         $resetUrl = $auditLogBaseUrl;
-        $exportUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log-export', $filter->toQueryParameters(false));
+        $exportUrl = (string)$this->uriBuilder->buildUriFromRoute(
+            'web_SkomLscacheCache.audit-log-export',
+            $this->buildAuditQuery($filter, $selectedSiteIdentifier, false),
+        );
 
         $view = $this->moduleTemplateFactory->create($request);
+        $this->registerSiteSelectorMenu(
+            $view,
+            $sites,
+            $selectedSiteIdentifier,
+            $request,
+            $this->uriBuilder,
+            $languageService,
+        );
         $view->setTitle($this->translate($languageService, 'dashboard.title'), $this->translate($languageService, 'auditLog.heading'));
         $this->pageRenderer->loadJavaScriptModule('@skom/lscache/backend-module.js');
 
@@ -101,12 +119,12 @@ final readonly class AuditLogController
                 'resetUrl' => $resetUrl,
                 'exportUrl' => $exportUrl,
                 'exportWillTruncate' => $totalRows > self::EXPORT_CAP,
-                'siteOptions' => $this->buildSiteOptions($filter, $languageService),
                 'sourceOptions' => $this->buildSourceOptions($filter, $languageService),
                 'outcomeOptions' => $this->buildOutcomeOptions($filter, $languageService),
                 'datePresetOptions' => $this->buildDatePresetOptions($filter, $languageService),
                 'filters' => [
-                    'siteIdentifiers' => $filter->getSiteIdentifiers(),
+                    'siteIdentifier' => $selectedSiteIdentifier,
+                    'siteIdentifiers' => [$selectedSiteIdentifier],
                     'sourceValues' => $filter->getSourceValues(),
                     'outcomeValues' => $filter->getOutcomeValues(),
                     'datePreset' => $filter->getDatePreset(),
@@ -118,7 +136,7 @@ final readonly class AuditLogController
                     'perPageOptions' => $filter->getPerPageOptions(),
                 ],
                 'rows' => $this->mapRows($rows, $languageService, $auditLogUrl),
-                'pagination' => $this->buildPagination($filter, $currentPage, $totalPages),
+                'pagination' => $this->buildPagination($filter, $selectedSiteIdentifier, $currentPage, $totalPages),
                 'totalRows' => $totalRows,
                 'isEmpty' => $rows === [],
             ])
@@ -226,34 +244,6 @@ final readonly class AuditLogController
         }
 
         return array_values($outcomes);
-    }
-
-    /**
-     * @return list<array{value: string, label: string, selected: bool}>
-     */
-    private function buildSiteOptions(AuditLogFilter $filter, LanguageService $languageService): array
-    {
-        $sites = $this->siteFinder->getAllSites();
-        $siteIdentifiers = $this->purgeLogRepository->findDistinctSiteIdentifiers();
-        foreach ($filter->getSiteIdentifiers() as $siteIdentifier) {
-            if (!in_array($siteIdentifier, $siteIdentifiers, true)) {
-                $siteIdentifiers[] = $siteIdentifier;
-            }
-        }
-
-        sort($siteIdentifiers);
-
-        $options = [];
-        foreach ($siteIdentifiers as $siteIdentifier) {
-            $site = $sites[$siteIdentifier] ?? null;
-            $options[] = [
-                'value' => $siteIdentifier,
-                'label' => $this->resolveSiteLabel($siteIdentifier, $site, $languageService),
-                'selected' => in_array($siteIdentifier, $filter->getSiteIdentifiers(), true),
-            ];
-        }
-
-        return $options;
     }
 
     /**
@@ -378,7 +368,12 @@ final readonly class AuditLogController
      *     pageLinks: list<array{page: int, url: string, current: bool}>
      * }
      */
-    private function buildPagination(AuditLogFilter $filter, int $currentPage, int $totalPages): array
+    private function buildPagination(
+        AuditLogFilter $filter,
+        string $selectedSiteIdentifier,
+        int $currentPage,
+        int $totalPages,
+    ): array
     {
         $pageLinks = [];
         $start = max(1, $currentPage - 2);
@@ -387,7 +382,7 @@ final readonly class AuditLogController
         if ($start > 1) {
             $pageLinks[] = [
                 'page' => 1,
-                'url' => $this->buildAuditLogRouteForPage($filter, 1),
+                'url' => $this->buildAuditLogRouteForPage($filter, $selectedSiteIdentifier, 1),
                 'current' => $currentPage === 1,
             ];
         }
@@ -395,7 +390,7 @@ final readonly class AuditLogController
         for ($page = $start; $page <= $end; $page++) {
             $pageLinks[] = [
                 'page' => $page,
-                'url' => $this->buildAuditLogRouteForPage($filter, $page),
+                'url' => $this->buildAuditLogRouteForPage($filter, $selectedSiteIdentifier, $page),
                 'current' => $page === $currentPage,
             ];
         }
@@ -403,7 +398,7 @@ final readonly class AuditLogController
         if ($end < $totalPages) {
             $pageLinks[] = [
                 'page' => $totalPages,
-                'url' => $this->buildAuditLogRouteForPage($filter, $totalPages),
+                'url' => $this->buildAuditLogRouteForPage($filter, $selectedSiteIdentifier, $totalPages),
                 'current' => $currentPage === $totalPages,
             ];
         }
@@ -413,18 +408,70 @@ final readonly class AuditLogController
             'totalPages' => $totalPages,
             'hasPrev' => $currentPage > 1,
             'hasNext' => $currentPage < $totalPages,
-            'prevUrl' => $this->buildAuditLogRouteForPage($filter, max(1, $currentPage - 1)),
-            'nextUrl' => $this->buildAuditLogRouteForPage($filter, min($totalPages, $currentPage + 1)),
+            'prevUrl' => $this->buildAuditLogRouteForPage(
+                $filter,
+                $selectedSiteIdentifier,
+                max(1, $currentPage - 1),
+            ),
+            'nextUrl' => $this->buildAuditLogRouteForPage(
+                $filter,
+                $selectedSiteIdentifier,
+                min($totalPages, $currentPage + 1),
+            ),
             'pageLinks' => $pageLinks,
         ];
     }
 
-    private function buildAuditLogRouteForPage(AuditLogFilter $filter, int $page): string
+    private function buildAuditLogRouteForPage(
+        AuditLogFilter $filter,
+        string $selectedSiteIdentifier,
+        int $page,
+    ): string
     {
-        $query = $filter->toQueryParameters();
+        $query = $this->buildAuditQuery($filter, $selectedSiteIdentifier);
         $query['page'] = max(1, $page);
 
         return (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', $query);
+    }
+
+    /**
+     * @param array<string, Site> $sites
+     */
+    private function resolveSelectedSiteIdentifier(
+        ServerRequestInterface $request,
+        AuditLogFilter $filter,
+        array $sites,
+    ): string {
+        $requestedSiteIdentifiers = $filter->getSiteIdentifiers();
+        if ($requestedSiteIdentifiers !== []) {
+            return (string)reset($requestedSiteIdentifiers);
+        }
+
+        $requestSite = $request->getAttribute('site');
+        if ($requestSite instanceof Site) {
+            return $requestSite->getIdentifier();
+        }
+
+        $siteIdentifiers = array_keys($sites);
+        if ($siteIdentifiers !== []) {
+            return (string)reset($siteIdentifiers);
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildAuditQuery(
+        AuditLogFilter $filter,
+        string $selectedSiteIdentifier,
+        bool $includePagination = true,
+    ): array {
+        $query = $filter->toQueryParameters($includePagination);
+        $query['site'] = $selectedSiteIdentifier;
+
+        return $query;
     }
 
     private function mapSourceIconIdentifier(PurgeSource $source): string

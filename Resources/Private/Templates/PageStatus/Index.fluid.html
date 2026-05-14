@@ -17,20 +17,6 @@
                     <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.description" />
                 </p>
             </div>
-            <div class="text-body-secondary small text-md-end">
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
-                    </span>
-                    {pageStatus.selectedSiteLabel}
-                </div>
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
-                    </span>
-                    <code>{pageStatus.selectedSiteBaseUrl}</code>
-                </div>
-            </div>
         </div>
 
         <ul class="nav nav-tabs mb-4" role="tablist">
@@ -59,17 +45,8 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form action="{pageStatus.pageStatusUrl}" method="get" class="row g-3 align-items-end">
-                    <div class="col-12 col-lg-4">
-                        <label for="page-status-site" class="form-label">
-                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.site" />
-                        </label>
-                        <select id="page-status-site" name="site" class="form-select">
-                            <f:for each="{pageStatus.siteOptions}" as="siteOption">
-                                <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
-                            </f:for>
-                        </select>
-                    </div>
-                    <div class="col-12 col-lg-4">
+                    <input type="hidden" name="site" value="{pageStatus.selectedSiteIdentifier}" />
+                    <div class="col-12 col-lg-8">
                         <label for="page-status-page-uid" class="form-label">
                             <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.form.pageUid" />
                         </label>

@@ -17,20 +17,6 @@
                     <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.description" />
                 </p>
             </div>
-            <div class="text-body-secondary small text-md-end">
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
-                    </span>
-                    {manualPurge.selectedSiteLabel}
-                </div>
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
-                    </span>
-                    <code>{manualPurge.selectedSiteBaseUrl}</code>
-                </div>
-            </div>
         </div>
 
         <ul class="nav nav-tabs mb-4" role="tablist">
@@ -72,16 +58,7 @@
                             <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
                             <input type="hidden" name="scope" value="page" />
 
-                            <div>
-                                <label class="form-label" for="manual-purge-page-site">
-                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
-                                </label>
-                                <select id="manual-purge-page-site" name="site" class="form-select">
-                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
-                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
-                                    </f:for>
-                                </select>
-                            </div>
+                            <input type="hidden" name="site" value="{manualPurge.selectedSiteIdentifier}" />
 
                             <div>
                                 <label class="form-label" for="manual-purge-page-uid">
@@ -139,16 +116,7 @@
                             <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
                             <input type="hidden" name="scope" value="tags" />
 
-                            <div>
-                                <label class="form-label" for="manual-purge-tags-site">
-                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
-                                </label>
-                                <select id="manual-purge-tags-site" name="site" class="form-select">
-                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
-                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
-                                    </f:for>
-                                </select>
-                            </div>
+                            <input type="hidden" name="site" value="{manualPurge.selectedSiteIdentifier}" />
 
                             <div>
                                 <label class="form-label" for="manual-purge-tags-input">
@@ -193,16 +161,7 @@
                             <input type="hidden" name="__RequestToken" value="{manualPurge.formToken}" />
                             <input type="hidden" name="scope" value="site" />
 
-                            <div>
-                                <label class="form-label" for="manual-purge-site-site">
-                                    <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:manualPurge.form.site" />
-                                </label>
-                                <select id="manual-purge-site-site" name="site" class="form-select">
-                                    <f:for each="{manualPurge.siteOptions}" as="siteOption">
-                                        <option value="{siteOption.identifier}"{f:if(condition: siteOption.selected, then: ' selected="selected"')}>{siteOption.label}</option>
-                                    </f:for>
-                                </select>
-                            </div>
+                            <input type="hidden" name="site" value="{manualPurge.selectedSiteIdentifier}" />
 
                             <div class="form-check">
                                 <input id="manual-purge-site-confirm" class="form-check-input" type="checkbox" name="confirmSitePurge" value="1" required />

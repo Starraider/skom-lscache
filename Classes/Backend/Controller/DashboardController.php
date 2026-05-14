@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 #[AsController]
 final readonly class DashboardController
 {
+    use SiteSelectorMenuTrait;
     public function __construct(
         private PageRenderer $pageRenderer,
         private UriBuilder $uriBuilder,
@@ -43,6 +44,15 @@ final readonly class DashboardController
         $selectedSiteBaseUrl = $selectedSite instanceof Site
             ? rtrim((string)$selectedSite->getBase(), '/') . '/'
             : '/';
+
+        $this->registerSiteSelectorMenu(
+            $view,
+            $sites,
+            $selectedSiteIdentifier,
+            $request,
+            $this->uriBuilder,
+            $languageService,
+        );
 
         $dashboardUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache');
         $auditLogUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache.audit-log', [

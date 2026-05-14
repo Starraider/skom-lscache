@@ -46,7 +46,7 @@ final class AuditLogControllerTest extends AbstractBackendModuleTestCase
         self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-pagination-next])'));
         self::assertSame(0, (int)$xpath->evaluate('count(//*[@data-audit-pagination-prev])'));
         self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-per-page]//option[@value="25" and @selected])'));
-        self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-filter-site]//option[@value="main" and @selected])'));
+        self::assertSame(2, (int)$xpath->evaluate('count(//input[@type="hidden" and @name="site" and @value="main"])'));
     }
 
     #[Test]
@@ -94,7 +94,7 @@ final class AuditLogControllerTest extends AbstractBackendModuleTestCase
 
         self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-row])'));
         self::assertSame('unknown-legacy-empty-site', trim((string)$xpath->evaluate('string((//*[@data-audit-row])[1]/@data-audit-row)')));
-        self::assertSame(1, (int)$xpath->evaluate('count(//*[@data-audit-filter-site]//option[@value="unknown" and @selected])'));
+        self::assertSame(2, (int)$xpath->evaluate('count(//input[@type="hidden" and @name="site" and @value="unknown"])'));
     }
 
     #[Test]

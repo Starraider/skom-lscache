@@ -74,6 +74,12 @@ final class PageStatusControllerTest extends AbstractBackendModuleTestCase
         self::assertSame('shared-main_site', trim((string)$xpath->evaluate('string((//*[@data-page-status-tag-prefix="site"]//code)[1])')));
         self::assertSame('main-new', trim((string)$xpath->evaluate('string((//*[@data-page-status-recent-row])[1]/@data-page-status-recent-row)')));
         self::assertSame('https://example.test/status-page', trim((string)$xpath->evaluate('string(//*[@data-page-status-probe-target]/@data-page-status-probe-target)')));
+        self::assertSame(
+            1,
+            (int)$xpath->evaluate(
+                'count(//a[contains(@class, "dropdown-item") and contains(@href, "/module/web/lscache/page-status") and contains(@href, "pageUid=42") and contains(@href, "site=secondary")])',
+            ),
+        );
         self::assertStringContainsString('Probe Live', $html);
     }
 

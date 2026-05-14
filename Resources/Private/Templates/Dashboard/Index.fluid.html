@@ -17,20 +17,6 @@
                     <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.description" />
                 </p>
             </div>
-            <div class="text-body-secondary small text-md-end">
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentSite.label" />:
-                    </span>
-                    {dashboard.selectedSiteLabel}
-                </div>
-                <div>
-                    <span class="fw-semibold">
-                        <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.currentBase.label" />:
-                    </span>
-                    <code>{dashboard.selectedSiteBaseUrl}</code>
-                </div>
-            </div>
         </div>
 
         <ul class="nav nav-tabs mb-4" role="tablist">
@@ -85,17 +71,6 @@
 
         <div class="row g-4">
             <div class="col-12 col-xxl-5">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0">
-                            <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:dashboard.siteSelector.heading" />
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <f:render partial="SiteSelector" arguments="{dashboard: dashboard}" />
-                    </div>
-                </div>
-
                 <div class="card">
                     <div class="card-header">
                         <h2 class="h5 mb-0">

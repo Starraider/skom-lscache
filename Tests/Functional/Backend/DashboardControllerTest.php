@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Skom\Lscache\Backend\Controller\DashboardController;
 use Skom\Lscache\Purge\Audit\PurgeLogOutcome;
 use Skom\Lscache\Purge\Enum\PurgeSource;
+use TYPO3\CMS\Core\Site\SiteFinder;
 
 require_once __DIR__ . '/AbstractBackendModuleTestCase.php';
 
@@ -26,7 +27,6 @@ final class DashboardControllerTest extends AbstractBackendModuleTestCase
         $response = $controller->handleRequest($this->createBackendRequest(['site' => 'main']));
         $html = (string)$response->getBody();
 
-        self::assertStringContainsString('Aktuelle Site', $html);
         self::assertStringContainsString('Site-Auswahl', $html);
         self::assertStringContainsString('Cache-Hit-Prüfung', $html);
         self::assertStringContainsString('Cache-Status prüfen', $html);
@@ -53,12 +53,47 @@ final class DashboardControllerTest extends AbstractBackendModuleTestCase
 
         self::assertSame(5, (int)$xpath->evaluate("count(//*[@data-recent-row])"));
         self::assertSame(0, (int)$xpath->evaluate("count(//*[@data-recent-row='request-6'])"));
-        self::assertSame(1, (int)$xpath->evaluate("count(//option[@value='main' and @selected])"));
-        self::assertSame(0, (int)$xpath->evaluate("count(//option[@value='secondary' and @selected])"));
+        self::assertSame(
+            1,
+            (int)$xpath->evaluate('count(//button[contains(@class, "dropdown-toggle") and contains(., "Main Site")])'),
+        );
+        self::assertSame(
+            1,
+            (int)$xpath->evaluate(
+                'count(//a[contains(@class, "dropdown-item") and contains(@href, "site=secondary") and contains(., "Secondary Site")])',
+            ),
+        );
 
         self::assertStringContainsString('Gepusht', $html);
         self::assertStringContainsString('Backend-Modul', $html);
         self::assertStringContainsString('Unbekannt', $html);
+    }
+
+    #[Test]
+    public function rendersDocHeaderSiteSelectorWithOnlyOneConfiguredSite(): void
+    {
+        $secondarySiteConfiguration = $this->instancePath . '/typo3conf/sites/secondary/config.yaml';
+        if (is_file($secondarySiteConfiguration)) {
+            unlink($secondarySiteConfiguration);
+        }
+        $this->get(SiteFinder::class)->siteConfigurationChanged();
+        $this->createBackendUser('de');
+
+        /** @var DashboardController $controller */
+        $controller = $this->get(DashboardController::class);
+        $response = $controller->handleRequest($this->createBackendRequest(['site' => 'main']));
+        $xpath = $this->createXPath((string)$response->getBody());
+
+        self::assertSame(
+            1,
+            (int)$xpath->evaluate('count(//button[contains(@class, "dropdown-toggle") and contains(., "Main Site")])'),
+        );
+        self::assertSame(
+            1,
+            (int)$xpath->evaluate(
+                'count(//a[contains(@class, "dropdown-item") and contains(@href, "site=main") and contains(., "Main Site")])',
+            ),
+        );
     }
 
     private function seedDashboardRows(): void

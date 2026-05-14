@@ -29,6 +29,7 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 #[AsController]
 final readonly class ManualPurgeController
 {
+    use SiteSelectorMenuTrait;
     private const string FORM_NAME = 'web_SkomLscacheCache.manual-purge';
     private const string FORM_ACTION = 'execute';
     private const string BACKEND_USER_ATTRIBUTE = 'backend.user';
@@ -56,6 +57,15 @@ final readonly class ManualPurgeController
         $selectedSiteIdentifier = $this->resolveSelectedSiteIdentifier($request, $sites);
         $selectedSite = $this->resolveSelectedSite($selectedSiteIdentifier, $sites);
         $selectedSiteLabel = $this->resolveSiteLabel($selectedSiteIdentifier, $selectedSite, $languageService);
+
+        $this->registerSiteSelectorMenu(
+            $view,
+            $sites,
+            $selectedSiteIdentifier,
+            $request,
+            $this->uriBuilder,
+            $languageService,
+        );
 
         $dashboardUrl = (string)$this->uriBuilder->buildUriFromRoute('web_SkomLscacheCache', [
             'site' => $selectedSiteIdentifier,
