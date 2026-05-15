@@ -6,8 +6,8 @@ namespace Skom\Lscache\Purge;
 
 final readonly class PurgeHeaderSerializer
 {
-    private const int TAG_CAP = 64;
-    private const int MAX_HEADER_VALUE_BYTES = 3500;
+    private const TAG_CAP = 64;
+    private const MAX_HEADER_VALUE_BYTES = 3500;
 
     /**
      * @return array{headers: list<string>, tagCount: int, outcome: 'flushed'|'truncated'|'skipped'}

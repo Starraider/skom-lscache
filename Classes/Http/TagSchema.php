@@ -13,7 +13,7 @@ use TYPO3\CMS\Core\Log\Channel;
  */
 final readonly class TagSchema
 {
-    private const int MAX_TAG_COUNT = 64;
+    private const MAX_TAG_COUNT = 64;
 
     /**
      * @param LoggerInterface $logger Channel logger used for tag truncation warnings.

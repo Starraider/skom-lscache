@@ -18,7 +18,7 @@ use TYPO3\CMS\Scheduler\Task\AbstractTask;
  */
 final class PurgeLogRetentionTask extends AbstractTask
 {
-    private const int DEFAULT_RETENTION_DAYS = 7;
+    private const DEFAULT_RETENTION_DAYS = 7;
 
     public function __construct(
         private ?PurgeLogRepository $purgeLogRepository = null,

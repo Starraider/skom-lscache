@@ -30,7 +30,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 final readonly class AuditLogController
 {
     use SiteSelectorMenuTrait;
-    private const int EXPORT_CAP = 10000;
+    private const EXPORT_CAP = 10000;
 
     public function __construct(
         private PageRenderer $pageRenderer,

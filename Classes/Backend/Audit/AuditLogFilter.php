@@ -11,7 +11,7 @@ use DateTimeImmutable;
  */
 final readonly class AuditLogFilter
 {
-    private const array DATE_PRESETS = [
+    private const DATE_PRESETS = [
         'lastHour',
         'last24h',
         'last7d',
@@ -21,7 +21,7 @@ final readonly class AuditLogFilter
     /**
      * @var list<int>
      */
-    private const array PER_PAGE_OPTIONS = [25, 50, 100, 200];
+    private const PER_PAGE_OPTIONS = [25, 50, 100, 200];
 
     /**
      * @param list<string> $siteIdentifiers

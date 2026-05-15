@@ -84,6 +84,9 @@ jobs:
       - name: Install dependencies
         run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies
 
+      - name: Normalize matrix Composer metadata
+        run: composer normalize
+
       - name: Composer normalize gate
         run: composer ci:composer:normalize
 

@@ -26,8 +26,8 @@ use TYPO3\CMS\Core\Site\SiteFinder;
  */
 final class CacheFlushEventListener
 {
-    private const string TRIGGER_REF_PREFIX = 'cache-flush-event:';
-    private const int TRIGGER_REF_MAX_LENGTH = 255;
+    private const TRIGGER_REF_PREFIX = 'cache-flush-event:';
+    private const TRIGGER_REF_MAX_LENGTH = 255;
 
     public function __construct(
         private readonly SiteFinder $siteFinder,

@@ -11,9 +11,9 @@ use Psr\Http\Message\ResponseInterface;
  */
 final readonly class HeaderWriter
 {
-    private const string CACHE_CONTROL = 'X-LiteSpeed-Cache-Control';
-    private const string TAG = 'X-LiteSpeed-Tag';
-    private const string VARY = 'X-LiteSpeed-Vary';
+    private const CACHE_CONTROL = 'X-LiteSpeed-Cache-Control';
+    private const TAG = 'X-LiteSpeed-Tag';
+    private const VARY = 'X-LiteSpeed-Vary';
 
     /**
      * Writes public LSCache cache-control, tag, and optional vary headers.

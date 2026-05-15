@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Log\Channel;
 class OpenLiteSpeedDetector
 {
     private static bool $nonOlsNoticeLogged = false;
-    private const string APCU_NOTICE_KEY = 'skom_lscache_non_ols_notice_logged';
+    private const APCU_NOTICE_KEY = 'skom_lscache_non_ols_notice_logged';
 
     /**
      * @param LoggerInterface $logger Channel logger used for non-OLS degradation notices.

@@ -12,7 +12,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 
 final readonly class DataHandlerTagResolver
 {
-    private const array DEFAULT_ALLOWED_TABLES = ['pages', 'tt_content'];
+    private const DEFAULT_ALLOWED_TABLES = ['pages', 'tt_content'];
 
     public function __construct(
         private SiteFinder $siteFinder,

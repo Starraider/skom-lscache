@@ -30,9 +30,9 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 final readonly class ManualPurgeController
 {
     use SiteSelectorMenuTrait;
-    private const string FORM_NAME = 'web_SkomLscacheCache.manual-purge';
-    private const string FORM_ACTION = 'execute';
-    private const string BACKEND_USER_ATTRIBUTE = 'backend.user';
+    private const FORM_NAME = 'web_SkomLscacheCache.manual-purge';
+    private const FORM_ACTION = 'execute';
+    private const BACKEND_USER_ATTRIBUTE = 'backend.user';
 
     public function __construct(
         private PageRenderer $pageRenderer,

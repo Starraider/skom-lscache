@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
  */
 final readonly class PurgeLogRepository
 {
-    private const string TABLE = 'tx_skomlscache_purge_log';
+    private const TABLE = 'tx_skomlscache_purge_log';
 
     public function __construct(
         private ConnectionPool $connectionPool,
