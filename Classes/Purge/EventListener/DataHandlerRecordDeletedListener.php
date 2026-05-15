@@ -32,20 +32,34 @@ final readonly class DataHandlerRecordDeletedListener
         }
 
         $pid = (int)($recordToDelete['pid'] ?? 0);
-        if ($pid <= 0) {
+        $pageIds = $this->resolvePageIds($table, $uid, $pid);
+        if ($pageIds === []) {
             return;
         }
 
-        $tags = $this->tagResolver->resolveTagsForRecord($table, $uid, [$pid]);
+        $tags = $this->tagResolver->resolveTagsForRecord($table, $uid, $pageIds);
         if ($tags === []) {
             return;
         }
 
         $triggerRef = sprintf('datahandler:delete:%s:%d', $table, $uid);
-        $siteIdentifier = $this->tagResolver->resolveSingleSiteIdentifierForPageIds([$pid]);
+        $siteIdentifier = $this->tagResolver->resolveSingleSiteIdentifierForPageIds($pageIds);
 
         $this->purgeService->purgeTags($tags, PurgeSource::DATAHANDLER, $triggerRef, $siteIdentifier);
         $this->dispatchLoopback($tags, $triggerRef, $siteIdentifier);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function resolvePageIds(string $table, int $uid, int $pid): array
+    {
+        // Purging page deletes must include the deleted page UID itself, not only its parent.
+        if ($table === 'pages') {
+            return array_values(array_unique(array_filter([$uid, $pid], static fn (int $pageId): bool => $pageId > 0)));
+        }
+
+        return $pid > 0 ? [$pid] : [];
     }
 
     /**

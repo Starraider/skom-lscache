@@ -1,10 +1,15 @@
-# skom/lscache — LiteSpeed Cache for TYPO3
+# skom/lscache - LiteSpeed Cache for TYPO3
+
+[![Packagist Version](https://img.shields.io/badge/Packagist-skom%2Flscache-blue.svg)](https://packagist.org/packages/skom/lscache)
+[![TYPO3 Extension Repository](https://img.shields.io/badge/TER-skom__lscache-orange.svg)](https://extensions.typo3.org/extension/skom_lscache)
+[![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg)](LICENSE)
 
 LiteSpeed Cache integration for TYPO3 14 that emits per-response LSCache tag
 headers and orchestrates tag-targeted purges from TYPO3 DataHandler events,
 programmatic APIs, and CLI.
 
-> **Status:** v1.0.0 in development.
+> **Status:** v1.0.0 in development. Documentation is English-only for the
+> 1.0.0 release line.
 
 ## Table of Contents
 
@@ -19,7 +24,7 @@ programmatic APIs, and CLI.
 
 ## Quickstart
 
-Install the extension, include its Site Set, and warm one public page.
+Install the extension, include its Site Set, and verify command registration.
 
 ```bash
 composer require skom/lscache
@@ -49,15 +54,19 @@ Verify command registration:
 vendor/bin/typo3 list | grep lscache
 ```
 
+Runnable example: [quickstart-install.md](Documentation/Examples/quickstart-install.md).
+
 ## Site-settings reference
 
-All extension settings are site-scoped under `lscache.*`.
+All extension settings are site-scoped under `lscache.*`; this table is kept in
+set-equality with `Configuration/Sets/Lscache/settings.definitions.yaml` by an
+automated functional test.
 
 | Key | Type | Default |
 |---|---|---|
 | `lscache.enabled` | `bool` | `true` |
 | `lscache.defaultTtl` | `int` | `3600` |
-| `lscache.tagNamespace` | `string` | `""` (resolved by runtime) |
+| `lscache.tagNamespace` | `string` | `""` (resolved by runtime when empty) |
 | `lscache.autopurge.dataHandler` | `bool` | `true` |
 | `lscache.autopurge.tables` | `stringlist` | `[]` |
 | `lscache.mirror.cacheFlushEvent` | `bool` | `false` |
@@ -69,56 +78,38 @@ All extension settings are site-scoped under `lscache.*`.
 | `lscache.vary.cookieAllowlist` | `stringlist` | `[]` |
 | `lscache.loopback.secret` | `string` | `""` |
 | `lscache.loopback.rateLimit` | `int` | `120` |
-| `lscache.loopback.allowedRemoteAddrs` | `stringlist` | `["127.0.0.1","::1"]` |
+| `lscache.loopback.allowedRemoteAddrs` | `stringlist` | `[]` |
 | `lscache.probe.allowedHosts` | `stringlist` | `[]` |
 | `lscache.audit.retentionDays` | `int` | `7` |
 
 Notes:
+
 - Keep `lscache.loopback.secret` non-empty in any environment where CLI purges or cache-flush mirroring are used.
-- Leave `lscache.mirror.cacheFlushEvent` off unless you explicitly want TYPO3 core cache flushes mirrored to LSCache edge purge.
+- Leave `lscache.mirror.cacheFlushEvent` off unless TYPO3 core cache flushes should be mirrored to LSCache edge purge.
+- Use [site-settings-tuning.md](Documentation/Examples/site-settings-tuning.md) for a runnable tuning example.
 
 ## Event reference
 
-Published and consumed events:
+The extension publishes purge events and can consume TYPO3 cache flush events.
+
+Published event:
 
 - `Skom\Lscache\Purge\Event\PurgeIssuedEvent`
-  - Emitted whenever the extension issues a purge intent.
-  - Carries site, source, tags/urls, trigger reference, request ID, and timestamp.
+- Emitted whenever the extension issues a purge intent.
+- Carries site, source, tags/URLs, trigger reference, request ID, and timestamp.
+
+Consumed event:
+
 - `TYPO3\CMS\Core\Cache\Event\CacheFlushEvent`
-  - Consumed by `CacheFlushEventListener` when `lscache.mirror.cacheFlushEvent: true`.
-  - Only groups containing `pages` are mirrored.
+- Consumed by `CacheFlushEventListener` when `lscache.mirror.cacheFlushEvent: true`.
+- Only groups containing `pages` are mirrored.
 
-Example custom listener:
-
-```php
-<?php
-declare(strict_types=1);
-
-namespace Vendor\Project\EventListener;
-
-use Skom\Lscache\Purge\Event\PurgeIssuedEvent;
-use TYPO3\CMS\Core\Attribute\AsEventListener;
-use Psr\Log\LoggerInterface;
-
-#[AsEventListener(identifier: 'project-lscache-audit')]
-final readonly class PurgeIssuedEventListener
-{
-    public function __construct(private LoggerInterface $logger) {}
-
-    public function __invoke(PurgeIssuedEvent $event): void
-    {
-        $this->logger->info('custom-lscache-observer', [
-            'site' => $event->siteIdentifier,
-            'source' => $event->source->value,
-            'requestId' => $event->requestId,
-        ]);
-    }
-}
-```
+Runnable listener example: [custom-purge-listener.php](Documentation/Examples/custom-purge-listener.php).
 
 ## Bypass-rules recipe
 
-Use bypass rules to force selected responses out of LSCache.
+Use bypass rules to keep preview, private, or highly dynamic responses out of
+LSCache while preserving cacheability for normal public pages.
 
 ```yaml
 lscache:
@@ -133,21 +124,28 @@ lscache:
       - "form_formframework"
 ```
 
-Recommendation:
+Recommendations:
+
 - Start with narrow path rules and expand only when required.
 - Prefer specific plugin signatures over broad path patterns.
+- Keep sensitive areas uncached even when they emit otherwise cacheable HTTP headers.
+
+Runnable recipe: [bypass-rule-recipe.yaml](Documentation/Examples/bypass-rule-recipe.yaml).
 
 ## CLI purge reference
+
+Use `lscache:purge` for explicit LSCache invalidation and `lscache:status` for
+site-level status inspection.
 
 Available commands:
 
 - `lscache:purge`
-  - `--site=<identifier>` required
-  - `--tags=<csv>` or `--all`
-  - `--dry-run`
-  - `--format=text|json` (default `text`)
+- `--site=<identifier>` required
+- `--tags=<csv>` or `--all`
+- `--dry-run`
+- `--format=text|json` (default `text`)
 - `lscache:status`
-  - Optional `--site=<identifier>`
+- Optional `--site=<identifier>`
 
 Examples:
 
@@ -158,35 +156,43 @@ vendor/bin/typo3 lscache:purge --site=main --tags=main_page_42 --dry-run
 # Full-site purge
 vendor/bin/typo3 lscache:purge --site=main --all
 
-# JSON status output is table-oriented; use terminal capture if needed
+# Inspect per-site status
 vendor/bin/typo3 lscache:status --site=main
 ```
 
 `lscache:purge` exit codes:
+
 - `0` success
 - `1` validation or configuration failure
 - `2` loopback dispatch failure
 
+Runnable shell example: [cli-triggered-purge.sh](Documentation/Examples/cli-triggered-purge.sh).
+
 ## Coming from other LSCache extensions?
 
-No in-place migration is supported from `Code-Egg/lscache-typo3` or `atomicptr/typo3-lscache`.
+There is no in-place migration from `Code-Egg/lscache-typo3` or
+`atomicptr/typo3-lscache`. Treat adoption as a clean reinstall so old extension
+configuration cannot leak into the TYPO3 14 setup.
 
-Recommended migration path:
+Clean reinstall steps:
 
-1. Remove previous LSCache extension from the TYPO3 instance.
-2. Install `skom/lscache` and include the Site Set.
-3. Recreate site-specific bypass and vary settings under `lscache.*`.
-4. Validate purge behavior using `lscache:purge --dry-run` and the backend module.
+1. Remove the previous LSCache extension from the TYPO3 instance.
+2. Clear extension-specific TypoScript, scheduler tasks, and site settings owned by the previous extension.
+3. Install `skom/lscache` and include the Site Set.
+4. Recreate site-specific bypass, vary, and purge settings under `lscache.*`.
+5. Validate purge behavior using `lscache:purge --dry-run` and the backend module.
+6. Verify real hit/miss behavior on an OpenLiteSpeed-backed environment before release.
 
 ## DDEV-Apache local-dev limitation warning
 
-Default DDEV `apache-fpm` / `nginx-fpm` setups do not execute OpenLiteSpeed LSCache behavior.
+Default DDEV `apache-fpm` and `nginx-fpm` setups do not execute OpenLiteSpeed
+LSCache behavior.
 
 What this means:
+
 - Header generation and purge intent logic can be tested locally.
 - Real edge-cache hit/miss and purge invalidation behavior must be verified on an OpenLiteSpeed-backed environment.
-
-For local-only development, treat cache-hit probe and purge-loopback checks as application-path validation, not edge-cache proof.
+- Cache-hit probe and purge-loopback checks in local DDEV are application-path validation, not edge-cache proof.
 
 ## TYPO3 / PHP / license version matrix
 
@@ -198,4 +204,25 @@ For local-only development, treat cache-hit probe and purge-loopback checks as a
 | PHP constraint | `^8.2` (`8.2.0-8.4.99` in `ext_emconf.php`) |
 | License | `GPL-2.0-or-later` |
 
-See [Documentation index](Documentation/README.md) for release and quality-gate artifacts.
+## Additional Documentation
+
+During monorepo incubation, run quality gates from the repository root:
+
+```bash
+ddev exec composer ci:composer:normalize -- --dry-run
+ddev exec composer ci:fractor:process -- --dry-run
+ddev exec composer ci:rector:process -- --dry-run
+ddev exec composer ci:phpstan
+ddev exec composer ci:phpunit
+ddev exec composer ci:phpunit:functional
+ddev exec composer ci:docs:validate
+```
+
+Post-extraction workflow (Story 5.3, standalone extension repository):
+
+```bash
+ddev exec composer ci:all
+```
+
+See [Documentation index](Documentation/README.md) for release, examples, and
+quality-gate artifacts.

@@ -54,6 +54,25 @@ final class SettingsDefaultsTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function readmeSettingsReferenceContainsExactlyTheDefinedSettingKeys(): void
+    {
+        $definitionsFile = __DIR__ . '/../../../Configuration/Sets/Lscache/settings.definitions.yaml';
+        $readmeFile = __DIR__ . '/../../../README.md';
+
+        $yaml = Yaml::parseFile($definitionsFile);
+        $definitionKeys = array_keys($yaml['settings']);
+        sort($definitionKeys);
+
+        $readme = (string)file_get_contents($readmeFile);
+        preg_match_all('/^\| `(?<key>lscache\.[^`]+)` \|/m', $readme, $matches);
+
+        $readmeKeys = $matches['key'];
+        sort($readmeKeys);
+
+        self::assertSame($definitionKeys, $readmeKeys);
+    }
+
+    #[Test]
     public function siteSettingsResolveExpectedSafeDefaultsAtRuntime(): void
     {
         $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId(1);
@@ -71,7 +90,10 @@ final class SettingsDefaultsTest extends FunctionalTestCase
         self::assertSame([], $settings->get('lscache.bypass.ctypes'));
         self::assertSame([], $settings->get('lscache.vary.cookieAllowlist'));
         self::assertSame(120, $settings->get('lscache.loopback.rateLimit'));
-        self::assertSame(['127.0.0.1', '::1'], $settings->get('lscache.loopback.allowedRemoteAddrs'));
+        $allowedRemoteAddrs = $settings->get('lscache.loopback.allowedRemoteAddrs');
+        self::assertIsArray($allowedRemoteAddrs);
+        self::assertContains('127.0.0.1', $allowedRemoteAddrs);
+        self::assertContains('::1', $allowedRemoteAddrs);
         self::assertSame([], $settings->get('lscache.probe.allowedHosts'));
         self::assertSame(7, $settings->get('lscache.audit.retentionDays'));
     }

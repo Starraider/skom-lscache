@@ -95,10 +95,11 @@ final class LoopbackEndpointTest extends FunctionalTestCase
         self::assertSame(200, $response->getStatusCode());
         $responseData = json_decode((string)$response->getBody(), true);
         self::assertSame($requestId, $responseData['requestId']);
-        self::assertSame('loopback-dispatched', $responseData['outcome']);
+        self::assertSame('flushed', $responseData['outcome']);
 
-        self::assertSame(['tag1'], $queue->drain()->tags());
-        self::assertSame($requestId, $auditContext->peekRequestIds()[0]);
+        self::assertSame('tag=tag1', $response->getHeaderLine('X-LiteSpeed-Purge'));
+        self::assertSame([], $queue->drain()->tags());
+        self::assertSame([], $auditContext->peekRequestIds());
     }
 
     public function testEndpointRejectsMissingOrInvalidSignature(): void

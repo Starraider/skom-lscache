@@ -1,0 +1,10 @@
+lscache:
+  bypass:
+    paths:
+      - "/preview/*"
+      - "/api/private/*"
+    pluginSignatures:
+      - "tx_news_pi1"
+    ctypes:
+      - "shortcut"
+      - "form_formframework"

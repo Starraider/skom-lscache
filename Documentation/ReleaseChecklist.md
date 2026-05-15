@@ -13,6 +13,7 @@
 - [ ] `ddev exec composer ci:composer:normalize`
 - [ ] `ddev exec composer ci:fractor:process`
 - [ ] `ddev exec composer ci:rector:process`
+- [ ] `ddev exec composer ci:docs:validate`
 - [ ] `ddev exec composer ci:phpstan`
 - [ ] `ddev exec composer ci:phpunit`
 - [ ] `ddev exec composer ci:phpunit:functional`
@@ -32,3 +33,5 @@
 ## Notes
 
 Use [QualityGateTracking.md](QualityGateTracking.md) for open gate details and noise ownership.
+Use [MaintainerGuide.md](MaintainerGuide.md) for branch-protection required checks policy.
+Keep documentation validation evidence at repository-root command level during monorepo incubation.

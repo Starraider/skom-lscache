@@ -106,6 +106,7 @@
             <trans-unit id="pageStatus.reason.response_set_cookie"><source>Response sets cookies</source><target>Antwort setzt Cookies</target></trans-unit>
             <trans-unit id="pageStatus.reason.request_method"><source>Request method is not GET/HEAD</source><target>Anfragemethode ist nicht GET/HEAD</target></trans-unit>
             <trans-unit id="pageStatus.reason.missing_request_context"><source>Missing request context attributes</source><target>Fehlende Request-Kontextattribute</target></trans-unit>
+            <trans-unit id="pageStatus.reason.BYPASS_RULE_MATCH"><source>Matched bypass rule</source><target>Treffende Bypass-Regel</target></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_path"><source>Matched bypass path rule</source><target>Treffende Bypass-Pfadregel</target></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_plugin_signature"><source>Matched bypass plugin signature</source><target>Treffende Bypass-Plugin-Signatur</target></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_ctype"><source>Matched bypass CType rule</source><target>Treffende Bypass-CType-Regel</target></trans-unit>

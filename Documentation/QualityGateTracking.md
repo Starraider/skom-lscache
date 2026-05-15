@@ -1,42 +1,35 @@
 # Quality Gate Tracking
 
-Date: 2026-05-10
-Owner: Murat (Test Architect)
+Date: 2026-05-15
+Owner: Maintainers
 
 ## Current Gate Snapshot
 
 | Gate | Status | Evidence |
 |---|---|---|
-| `ci:composer:normalize` | green | normalized |
+| `ci:composer:normalize` | green | host-level script passes in DDEV |
 | `ci:fractor:process` | green | dry-run clean |
-| `ci:rector:process` | pending | must be rechecked after safe migration and skip guard |
-| `ci:phpstan` | pending | must be rechecked after backend user attribute typing fix |
-| `ci:phpunit` | green | passing |
-| `ci:phpunit:functional` | green with noise | warnings + deprecations + PHPUnit notices |
+| `ci:rector:process` | green | dry-run clean |
+| `ci:docs:validate` | green | validates README TOC/settings parity plus shell, PHP, and YAML examples |
+| `ci:phpstan` | green | root `phpstan.neon` includes extension Classes/Tests |
+| `ci:phpunit` | green | host-level unit suite passes |
+| `ci:phpunit:functional` | green | Story 5.1 scenario classes present and green |
 
-## Functional Suite Noise Routing
+## Ownership and Closure Criteria
 
-Goal: warnings, deprecations, and notices are either removed or tracked with accepted rationale before release readiness signoff.
+- CI workflow owner: Maintainers
+- Test-data and fixture owner: Extension maintainers
+- Static analysis ownership: Extension maintainers
 
-### Track A: Warnings
+Closure criteria:
 
-- Owner: Murat
-- Route: collect each warning with source test and class; classify as framework-level vs extension-level
-- Exit criteria: no extension-origin warnings remain untracked
+- All seven host-level gates pass sequentially from repository root.
+- All nine CI matrix cells pass in `.github/workflows/ci.yml`.
+- Documentation examples pass `composer ci:docs:validate` with ShellCheck, `php -l`, yamllint, and README/settings parity checks.
+- Story 5.1 scenario classes stay green without quarantine/skips.
+- Any newly introduced warning/deprecation is linked to a follow-up owner before merge.
 
-### Track B: Deprecations
+## Notes
 
-- Owner: Murat
-- Route: map each deprecation to file and TYPO3/PHP API; create fix task or explicit defer decision
-- Exit criteria: each deprecation has a decision record and owner
-
-### Track C: PHPUnit Notices
-
-- Owner: Murat
-- Route: identify noisy assertions/bootstrap notices; convert avoidable notices into deterministic assertions
-- Exit criteria: no unexplained PHPUnit notice remains in CI output
-
-## Reporting Cadence
-
-- Update this file whenever functional-suite output changes materially.
-- Mirror resolved items into retrospective and release checklist closure notes.
+- Runtime target remains <= 60 seconds locally for the seven gate sequence in DDEV.
+- Slow tests are marked with `@group slow` and can be isolated when diagnosing runtime regressions.

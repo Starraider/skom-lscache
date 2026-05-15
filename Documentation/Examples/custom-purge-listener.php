@@ -1,9 +1,5 @@
-# Example 3: Custom PurgeIssuedEvent Listener
-
-`Classes/EventListener/PurgeIssuedEventListener.php`:
-
-```php
 <?php
+
 declare(strict_types=1);
 
 namespace Vendor\Project\EventListener;
@@ -26,4 +22,3 @@ final readonly class PurgeIssuedEventListener
         ]);
     }
 }
-```

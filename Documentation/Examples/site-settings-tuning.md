@@ -1,4 +1,7 @@
-# Example 2: Site Settings Tuning
+# Site Settings Tuning
+
+Scenario: enable LSCache integration for a public site, set a 30-minute default
+TTL, namespace tags for the site, and configure loopback safety limits.
 
 `config/sites/main/settings.yaml`:
 
@@ -17,3 +20,6 @@ lscache:
     cookieAllowlist:
       - "fe_typo_user"
 ```
+
+Keep the loopback secret environment-driven; do not commit secret values into
+site configuration.

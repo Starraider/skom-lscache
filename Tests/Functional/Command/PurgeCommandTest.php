@@ -31,7 +31,7 @@ final class PurgeCommandTest extends FunctionalTestCase
         }
 
         $enabledStr = $enabled ? 'true' : 'false';
-        $secretLine = $secret !== '' ? "      secret: '{$secret}'" : '';
+        $secretLine = $secret !== '' ? "      secret: '{$secret}'" : "      secret: ''";
 
         file_put_contents(
             $sitePath . '/config.yaml',
@@ -141,4 +141,3 @@ YAML,
         self::assertSame($countBefore + 1, $countAfter, 'An audit log row must be generated before loopback failure.');
     }
 }
-
