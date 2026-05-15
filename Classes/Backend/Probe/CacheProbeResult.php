@@ -22,6 +22,10 @@ final readonly class CacheProbeResult
         'X-LSADC-Cache',
         'X-QC-Cache',
     ];
+    private const CACHE_CONTROL_HEADER_NAMES = [
+        'X-LiteSpeed-Cache-Control',
+        'X-LS-Cache-Control',
+    ];
 
     private const STATE_ICON_MAP = [
         self::STATE_HIT => 'actions-check-circle',
@@ -60,7 +64,7 @@ final readonly class CacheProbeResult
 
         $header = self::detectCacheHeader($response);
         if ($header !== null) {
-            $classification = self::classifyHeaderValue($statusCode, $header['value']);
+            $classification = self::classifyHeaderValue($header['value']);
             if ($classification !== null) {
                 return new self(
                     $classification,
@@ -82,17 +86,13 @@ final readonly class CacheProbeResult
             );
         }
 
-        if ($header !== null) {
-            return new self(
-                self::STATE_NOT_CACHEABLE,
-                $targetUrl,
-                $statusCode,
-                $header['name'],
-                $header['value'],
-            );
-        }
-
-        return new self(self::STATE_NO_LSCACHE_HEADER, $targetUrl, $statusCode);
+        return new self(
+            $header !== null ? self::STATE_MISS : self::STATE_NO_LSCACHE_HEADER,
+            $targetUrl,
+            $statusCode,
+            $header['name'] ?? null,
+            $header['value'] ?? null,
+        );
     }
 
     public static function fromThrowable(string $targetUrl, Throwable $throwable): self
@@ -190,7 +190,7 @@ final readonly class CacheProbeResult
         return null;
     }
 
-    private static function classifyHeaderValue(int $statusCode, string $headerValue): ?string
+    private static function classifyHeaderValue(string $headerValue): ?string
     {
         $tokens = self::splitHeaderValue($headerValue);
 
@@ -198,12 +198,12 @@ final readonly class CacheProbeResult
             return self::STATE_HIT;
         }
 
-        if (self::isNotCacheableStatus($statusCode) || self::hasNotCacheableTokens($tokens)) {
-            return self::STATE_NOT_CACHEABLE;
-        }
-
         if (in_array('miss', $tokens, true)) {
             return self::STATE_MISS;
+        }
+
+        if (self::hasNotCacheableTokens($tokens)) {
+            return self::STATE_NOT_CACHEABLE;
         }
 
         return null;
@@ -229,7 +229,6 @@ final readonly class CacheProbeResult
             'no-cache',
             'no-store',
             'nocache',
-            'private',
             'uncacheable',
             'disabled',
         ]) !== [];
@@ -237,15 +236,28 @@ final readonly class CacheProbeResult
 
     private static function hasNotCacheableSignals(ResponseInterface $response, int $statusCode): bool
     {
-        if (self::isNotCacheableStatus($statusCode)) {
+        if (in_array($statusCode, [401, 403], true)) {
             return true;
+        }
+
+        foreach (self::CACHE_CONTROL_HEADER_NAMES as $headerName) {
+            $litespeedCacheControl = strtolower($response->getHeaderLine($headerName));
+            if ($litespeedCacheControl !== '' && (
+                str_contains($litespeedCacheControl, 'no-cache')
+                || str_contains($litespeedCacheControl, 'no-store')
+                || str_contains($litespeedCacheControl, 'nocache')
+                || str_contains($litespeedCacheControl, 'uncacheable')
+                || str_contains($litespeedCacheControl, 'disabled')
+                || str_contains($litespeedCacheControl, 'bypass')
+            )) {
+                return true;
+            }
         }
 
         $cacheControl = strtolower($response->getHeaderLine('Cache-Control'));
         if ($cacheControl !== '' && (
             str_contains($cacheControl, 'no-cache')
             || str_contains($cacheControl, 'no-store')
-            || str_contains($cacheControl, 'private')
         )) {
             return true;
         }
@@ -255,12 +267,7 @@ final readonly class CacheProbeResult
             return true;
         }
 
-        return $response->hasHeader('Set-Cookie');
-    }
-
-    private static function isNotCacheableStatus(int $statusCode): bool
-    {
-        return in_array($statusCode, [301, 302, 303, 307, 308, 401, 403], true);
+        return false;
     }
 
     private static function isTimeoutThrowable(Throwable $throwable): bool

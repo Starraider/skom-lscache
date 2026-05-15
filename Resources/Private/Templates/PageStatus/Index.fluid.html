@@ -44,7 +44,7 @@
 
         <div class="card mb-4">
             <div class="card-body">
-                <form action="{pageStatus.pageStatusUrl}" method="get" class="row g-3 align-items-end">
+                <form action="{pageStatus.pageStatusUrl}" method="get" target="_top" class="row g-3 align-items-end">
                     <input type="hidden" name="site" value="{pageStatus.selectedSiteIdentifier}" />
                     <div class="col-12 col-lg-8">
                         <label for="page-status-page-uid" class="form-label">
@@ -84,7 +84,7 @@
         <f:if condition="{pageStatus.result}">
             <div class="row g-4">
                 <div class="col-12 col-xl-6">
-                    <div class="card h-100 mb-4">
+                    <div class="card mb-4">
                         <div class="card-header">
                             <h2 class="h5 mb-0">
                                 <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.decision.heading" />
@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    <div class="card h-100">
+                    <div class="card">
                         <div class="card-header">
                             <h2 class="h5 mb-0">
                                 <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.heading" />
@@ -162,7 +162,7 @@
                                     <f:translate key="LLL:EXT:skom_lscache/Resources/Private/Language/locallang.xlf:pageStatus.result.probeLive.button" />
                                 </button>
                             </form>
-                            <div aria-live="polite" aria-atomic="true" data-cache-probe-result>
+                            <div class="mt-3" aria-live="polite" aria-atomic="true" data-cache-probe-result>
                                 <div class="alert alert-info mb-0">
                                     <div class="d-flex align-items-start gap-3">
                                         <core:icon identifier="actions-info-circle" />

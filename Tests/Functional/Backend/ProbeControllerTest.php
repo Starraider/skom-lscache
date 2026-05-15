@@ -47,7 +47,7 @@ final class ProbeControllerTest extends AbstractBackendModuleTestCase
     }
 
     #[Test]
-    public function returnsLocalizedNotCacheablePayloadForAuthenticatedOnlyTargets(): void
+    public function returnsNoLitespeedHeaderPayloadWhenNoCacheHeadersArePresent(): void
     {
         $this->createBackendUser('de');
         $client = new CallbackProbeClient(
@@ -68,9 +68,9 @@ final class ProbeControllerTest extends AbstractBackendModuleTestCase
         ));
 
         self::assertSame(['https://example.test/login'], $client->targets);
-        self::assertSame('not-cacheable', $payload['state']);
-        self::assertSame('NOT-CACHEABLE', $payload['title']);
-        self::assertSame('Die Antwort kann nicht gecacht werden.', $payload['message']);
+        self::assertSame('no-lscache-header', $payload['state']);
+        self::assertSame('NO-LSCACHE-HEADER', $payload['title']);
+        self::assertSame('Die Antwort hat keinen LiteSpeed-Cache-Header geliefert.', $payload['message']);
         self::assertSame('https://example.test/login', $payload['targetUrl']);
     }
 
@@ -133,7 +133,7 @@ final class ProbeControllerTest extends AbstractBackendModuleTestCase
     }
 
     #[Test]
-    public function blocksAbsoluteTargetsOutsideSelectedSiteWhenNoAllowlistIsConfigured(): void
+    public function allowsAbsoluteTargetsOutsideSelectedSiteWithoutAllowlist(): void
     {
         $this->createBackendUser('de');
         $client = new CallbackProbeClient(
@@ -153,11 +153,9 @@ final class ProbeControllerTest extends AbstractBackendModuleTestCase
                 ]),
         ));
 
-        self::assertSame([], $client->targets);
-        self::assertSame('not-cacheable', $payload['state']);
-        self::assertSame('NOT-CACHEABLE', $payload['title']);
-        self::assertSame('Der Ziel-Host ist für die Probe nicht erlaubt.', $payload['message']);
-        self::assertSame('Verwende den Host der gewählten Site oder konfiguriere lscache.probe.allowedHosts in den Site-Einstellungen.', $payload['details']);
+        self::assertSame(['https://external.example/probe'], $client->targets);
+        self::assertSame('hit', $payload['state']);
+        self::assertSame('HIT', $payload['title']);
         self::assertSame('https://external.example/probe', $payload['targetUrl']);
     }
 

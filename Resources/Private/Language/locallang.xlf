@@ -182,7 +182,7 @@
             <trans-unit id="probe.state.miss.title"><source>MISS</source></trans-unit>
             <trans-unit id="probe.state.miss.message"><source>The response was cacheable but not served from cache.</source></trans-unit>
             <trans-unit id="probe.state.not-cacheable.title"><source>NOT-CACHEABLE</source></trans-unit>
-            <trans-unit id="probe.state.not-cacheable.message"><source>The response cannot be cached.</source></trans-unit>
+            <trans-unit id="probe.state.not-cacheable.message"><source>The response is currently not being served from cache.</source></trans-unit>
             <trans-unit id="probe.state.no-lscache-header.title"><source>NO-LSCACHE-HEADER</source></trans-unit>
             <trans-unit id="probe.state.no-lscache-header.message"><source>The response did not expose a LiteSpeed cache header.</source></trans-unit>
             <trans-unit id="probe.state.timeout.title"><source>TIMEOUT</source></trans-unit>

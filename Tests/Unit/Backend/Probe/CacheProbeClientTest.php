@@ -55,4 +55,44 @@ final class CacheProbeClientTest extends TestCase
         self::assertFalse($captured['options']['http_errors']);
         self::assertSame(CacheProbeResult::STATE_HIT, $result->getState());
     }
+
+    #[Test]
+    public function probeRetriesOnceAfterMissToConfirmWhetherCacheWasWarmed(): void
+    {
+        $originalHandler = $GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler'] ?? null;
+        $requestCount = 0;
+
+        $GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler'] = HandlerStack::create(
+            static function (RequestInterface $request, array $options) use (&$requestCount) {
+                $requestCount++;
+
+                self::assertSame('HEAD', $request->getMethod());
+                self::assertSame('https://example.test/probe', (string)$request->getUri());
+                self::assertSame('skom/lscache-probe', $request->getHeaderLine('User-Agent'));
+                self::assertEquals(3, $options['timeout']);
+                self::assertEquals(3, $options['connect_timeout']);
+                self::assertFalse($options['allow_redirects']);
+                self::assertFalse($options['http_errors']);
+
+                if ($requestCount === 1) {
+                    return Create::promiseFor(new Response(200, ['X-LiteSpeed-Cache' => 'MISS']));
+                }
+
+                return Create::promiseFor(new Response(200, ['X-LiteSpeed-Cache' => 'HIT']));
+            },
+        );
+
+        try {
+            $result = (new CacheProbeClient(new RequestFactory(new GuzzleClientFactory())))->probe('https://example.test/probe');
+        } finally {
+            if ($originalHandler !== null) {
+                $GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler'] = $originalHandler;
+            } else {
+                unset($GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler']);
+            }
+        }
+
+        self::assertSame(2, $requestCount);
+        self::assertSame(CacheProbeResult::STATE_HIT, $result->getState());
+    }
 }

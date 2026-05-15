@@ -49,7 +49,7 @@ final class CacheProbeResultTest extends TestCase
         self::assertSame(
             CacheProbeResult::STATE_NOT_CACHEABLE,
             CacheProbeResult::fromResponse(
-                new Response(200, ['Set-Cookie' => 'session=1']),
+                new Response(200, ['X-LiteSpeed-Cache-Control' => 'no-cache']),
                 'https://example.test/private',
             )->getState(),
         );
@@ -57,8 +57,16 @@ final class CacheProbeResultTest extends TestCase
         self::assertSame(
             CacheProbeResult::STATE_NO_LSCACHE_HEADER,
             CacheProbeResult::fromResponse(
-                new Response(200),
+                new Response(200, ['Set-Cookie' => 'session=1']),
                 'https://example.test/none',
+            )->getState(),
+        );
+
+        self::assertSame(
+            CacheProbeResult::STATE_NOT_CACHEABLE,
+            CacheProbeResult::fromResponse(
+                new Response(401),
+                'https://example.test/forbidden',
             )->getState(),
         );
     }

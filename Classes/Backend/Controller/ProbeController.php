@@ -11,7 +11,6 @@ use Skom\Lscache\Backend\Probe\CacheProbeClientInterface;
 use Skom\Lscache\Backend\Probe\CacheProbeResult;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -38,12 +37,6 @@ final readonly class ProbeController
                     '',
                     new InvalidArgumentException('Missing target URL for cache probe.'),
                 )->toArray($languageService),
-            );
-        }
-
-        if ($this->looksAbsolute($targetUrl) && !$this->isAllowedAbsoluteTarget($targetUrl, $site)) {
-            return new JsonResponse(
-                $this->buildDisallowedTargetPayload($languageService, $targetUrl),
             );
         }
 
@@ -100,85 +93,4 @@ final readonly class ProbeController
             || (bool)preg_match('#^[a-z][a-z0-9+.-]*://#i', $targetUrl);
     }
 
-    private function isAllowedAbsoluteTarget(string $targetUrl, ?Site $site): bool
-    {
-        $targetHost = strtolower(trim((string)parse_url($targetUrl, PHP_URL_HOST)));
-        if ($targetHost === '') {
-            return false;
-        }
-
-        if ($site instanceof Site) {
-            $siteHost = strtolower(trim((string)parse_url((string)$site->getBase(), PHP_URL_HOST)));
-            if ($siteHost !== '' && $targetHost === $siteHost) {
-                return true;
-            }
-
-            foreach ($this->resolveAllowedHosts($site) as $allowedHost) {
-                if ($targetHost === $allowedHost) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function resolveAllowedHosts(Site $site): array
-    {
-        $allowedHosts = $site->getSettings()->get('lscache.probe.allowedHosts', null);
-        if (!is_array($allowedHosts)) {
-            $allowedHosts = $site->getConfiguration()['settings']['lscache']['probe']['allowedHosts'] ?? [];
-        }
-        if (!is_array($allowedHosts)) {
-            return [];
-        }
-
-        $normalizedHosts = [];
-        foreach ($allowedHosts as $host) {
-            $host = strtolower(trim((string)$host));
-            if ($host !== '') {
-                $normalizedHosts[] = $host;
-            }
-        }
-
-        return array_values(array_unique($normalizedHosts));
-    }
-
-    /**
-     * @return array{
-     *     state: string,
-     *     title: string,
-     *     message: string,
-     *     details: string,
-     *     iconIdentifier: string,
-     *     statusClass: string,
-     *     targetUrl: string,
-     *     statusCode: null,
-     *     headerName: null,
-     *     headerValue: null
-     * }
-     */
-    private function buildDisallowedTargetPayload(LanguageService $languageService, string $targetUrl): array
-    {
-        return [
-            'state' => CacheProbeResult::STATE_NOT_CACHEABLE,
-            'title' => $this->translate($languageService, 'probe.state.not-cacheable.title'),
-            'message' => $this->translate($languageService, 'probe.error.disallowedTarget'),
-            'details' => $this->translate($languageService, 'probe.details.disallowedTarget'),
-            'iconIdentifier' => 'actions-exclamation-triangle',
-            'statusClass' => 'warning',
-            'targetUrl' => $targetUrl,
-            'statusCode' => null,
-            'headerName' => null,
-            'headerValue' => null,
-        ];
-    }
-
-    private function translate(LanguageService $languageService, string $key): string
-    {
-        return $languageService->sL('skom_lscache.messages:' . $key);
-    }
 }
