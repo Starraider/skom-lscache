@@ -10,6 +10,7 @@ programmatic APIs, and CLI.
 
 > **Status:** v1.0.0 in development. Documentation is English-only for the
 > 1.0.0 release line.
+> **Repository:** https://github.com/Starraider/skom-lscache
 
 ## Table of Contents
 
@@ -25,6 +26,12 @@ programmatic APIs, and CLI.
 ## Quickstart
 
 Install the extension, include its Site Set, and verify command registration.
+
+```bash
+ddev exec composer require skom/lscache
+```
+
+If DDEV is not used:
 
 ```bash
 composer require skom/lscache
@@ -51,7 +58,7 @@ lscache:
 Verify command registration:
 
 ```bash
-vendor/bin/typo3 list | grep lscache
+ddev exec vendor/bin/typo3 list | grep lscache
 ```
 
 Runnable example: [quickstart-install.md](Documentation/Examples/quickstart-install.md).
@@ -151,13 +158,13 @@ Examples:
 
 ```bash
 # Dry-run tag purge
-vendor/bin/typo3 lscache:purge --site=main --tags=main_page_42 --dry-run
+ddev exec vendor/bin/typo3 lscache:purge --site=main --tags=main_page_42 --dry-run
 
 # Full-site purge
-vendor/bin/typo3 lscache:purge --site=main --all
+ddev exec vendor/bin/typo3 lscache:purge --site=main --all
 
 # Inspect per-site status
-vendor/bin/typo3 lscache:status --site=main
+ddev exec vendor/bin/typo3 lscache:status --site=main
 ```
 
 `lscache:purge` exit codes:
@@ -206,22 +213,22 @@ What this means:
 
 ## Additional Documentation
 
-During monorepo incubation, run quality gates from the repository root:
+Standalone quality gates run from this repository root:
 
 ```bash
-ddev exec composer ci:composer:normalize -- --dry-run
-ddev exec composer ci:fractor:process -- --dry-run
-ddev exec composer ci:rector:process -- --dry-run
-ddev exec composer ci:phpstan
-ddev exec composer ci:phpunit
-ddev exec composer ci:phpunit:functional
-ddev exec composer ci:docs:validate
+composer ci:composer:normalize
+composer ci:fractor:process
+composer ci:rector:process
+composer ci:docs:validate
+composer ci:phpstan
+composer ci:phpunit
+composer ci:phpunit:functional
 ```
 
-Post-extraction workflow (Story 5.3, standalone extension repository):
+Run the full deterministic gate sequence:
 
 ```bash
-ddev exec composer ci:all
+composer ci:all
 ```
 
 See [Documentation index](Documentation/README.md) for release, examples, and

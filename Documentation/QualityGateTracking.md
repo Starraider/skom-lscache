@@ -7,13 +7,14 @@ Owner: Maintainers
 
 | Gate | Status | Evidence |
 |---|---|---|
-| `ci:composer:normalize` | green | host-level script passes in DDEV |
+| `ci:composer:normalize` | green | standalone script must pass from repository root |
 | `ci:fractor:process` | green | dry-run clean |
 | `ci:rector:process` | green | dry-run clean |
 | `ci:docs:validate` | green | validates README TOC/settings parity plus shell, PHP, and YAML examples |
-| `ci:phpstan` | green | root `phpstan.neon` includes extension Classes/Tests |
-| `ci:phpunit` | green | host-level unit suite passes |
+| `ci:phpstan` | green | standalone `phpstan.neon` scans `Classes` and `Tests` at level 6 |
+| `ci:phpunit` | green | standalone unit suite runs `Tests/Unit` |
 | `ci:phpunit:functional` | green | Story 5.1 scenario classes present and green |
+| `ci:all` | green | deterministic aggregate of all seven gates |
 
 ## Ownership and Closure Criteria
 
@@ -23,7 +24,8 @@ Owner: Maintainers
 
 Closure criteria:
 
-- All seven host-level gates pass sequentially from repository root.
+- All seven standalone gates pass sequentially from repository root.
+- `composer ci:all` passes in the standalone repository.
 - All nine CI matrix cells pass in `.github/workflows/ci.yml`.
 - Documentation examples pass `composer ci:docs:validate` with ShellCheck, `php -l`, yamllint, and README/settings parity checks.
 - Story 5.1 scenario classes stay green without quarantine/skips.
@@ -31,5 +33,5 @@ Closure criteria:
 
 ## Notes
 
-- Runtime target remains <= 60 seconds locally for the seven gate sequence in DDEV.
+- Host monorepo gates remain separate until Story 5.5 Packagist cutover.
 - Slow tests are marked with `@group slow` and can be isolated when diagnosing runtime regressions.

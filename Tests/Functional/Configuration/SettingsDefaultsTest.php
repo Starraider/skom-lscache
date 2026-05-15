@@ -94,6 +94,12 @@ final class SettingsDefaultsTest extends FunctionalTestCase
         self::assertIsArray($allowedRemoteAddrs);
         self::assertContains('127.0.0.1', $allowedRemoteAddrs);
         self::assertContains('::1', $allowedRemoteAddrs);
+        self::assertNotContains('', $allowedRemoteAddrs);
+        self::assertNotContains('*', $allowedRemoteAddrs);
+        foreach ($allowedRemoteAddrs as $allowedRemoteAddr) {
+            self::assertIsString($allowedRemoteAddr);
+            self::assertNotFalse(filter_var($allowedRemoteAddr, FILTER_VALIDATE_IP));
+        }
         self::assertSame([], $settings->get('lscache.probe.allowedHosts'));
         self::assertSame(7, $settings->get('lscache.audit.retentionDays'));
     }

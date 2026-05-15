@@ -1,37 +1,87 @@
 {
-	"name": "skom/lscache",
-	"description": "LiteSpeed Cache integration for TYPO3 — emits per-response LSCache tag headers and orchestrates tag-targeted purges.",
-	"license": "GPL-2.0-or-later",
-	"type": "typo3-cms-extension",
-	"version": "1.0.0",
-	"authors": [
-		{
-			"name": "Sven Kalbhenn",
-			"email": "sven@skom.de",
-			"homepage": "https://www.skom.de/",
-			"role": "Developer"
-		}
-	],
-	"require": {
-		"php": "^8.2",
-		"typo3/cms-core": "^14.3"
-	},
-	"autoload": {
-		"psr-4": {
-			"Skom\\Lscache\\": "Classes/"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Skom\\Lscache\\Tests\\": "Tests/"
-		}
-	},
-	"extra": {
-		"typo3/cms": {
-			"Package": {
-				"providesPackages": {}
-			},
-			"extension-key": "skom_lscache"
-		}
-	}
+    "name": "skom/lscache",
+    "description": "LiteSpeed Cache integration for TYPO3 - emits per-response LSCache tag headers and orchestrates tag-targeted purges.",
+    "license": "GPL-2.0-or-later",
+    "type": "typo3-cms-extension",
+    "authors": [
+        {
+            "name": "Sven Kalbhenn",
+            "email": "sven@skom.de",
+            "homepage": "https://www.skom.de/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-core": "^14.3"
+    },
+    "require-dev": {
+        "a9f/typo3-fractor": "^0.5.10",
+        "ergebnis/composer-normalize": "^2.52",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.5",
+        "saschaegerer/phpstan-typo3": "^3.0",
+        "ssch/typo3-rector": "^3.14",
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-dashboard": "^14.3",
+        "typo3/cms-frontend": "^14.3",
+        "typo3/cms-install": "^14.3",
+        "typo3/cms-scheduler": "^14.3",
+        "typo3/testing-framework": "^9.0"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://composer.typo3.org/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Skom\\Lscache\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Skom\\Lscache\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "a9f/fractor-extension-installer": true,
+            "ergebnis/composer-normalize": true,
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        },
+        "process-timeout": 900,
+        "sort-packages": true
+    },
+    "extra": {
+        "typo3/cms": {
+            "Package": {
+                "providesPackages": {}
+            },
+            "extension-key": "skom_lscache"
+        }
+    },
+    "scripts": {
+        "ci:all": [
+            "@ci:composer:normalize",
+            "@ci:fractor:process",
+            "@ci:rector:process",
+            "@ci:docs:validate",
+            "@ci:phpstan",
+            "@ci:phpunit",
+            "@ci:phpunit:functional"
+        ],
+        "ci:composer:normalize": "@composer normalize --dry-run",
+        "ci:docs:validate": "php tools/validate-docs.php",
+        "ci:fractor:process": "vendor/bin/fractor process --dry-run",
+        "ci:phpstan": "vendor/bin/phpstan analyse --no-progress --memory-limit=1G",
+        "ci:phpunit": "php -d memory_limit=1G vendor/bin/phpunit -c phpunit.xml.dist",
+        "ci:phpunit:functional": "php -d memory_limit=1G vendor/bin/phpunit -c phpunit-functional.xml.dist",
+        "ci:rector:process": "vendor/bin/rector process --dry-run --debug --no-progress-bar",
+        "fix:composer": "@composer normalize",
+        "fix:fractor:process": "vendor/bin/fractor process",
+        "fix:rector:process": "vendor/bin/rector process --debug --no-progress-bar"
+    }
 }

@@ -133,7 +133,7 @@ final class CacheabilityClassifierTest extends TestCase
         );
 
         self::assertFalse($decision->cacheable);
-        self::assertSame(BypassReason::BYPASS_RULE_MATCH, $decision->reason);
+        self::assertSame(BypassReason::BYPASS_PATH, $decision->reason);
         self::assertSame('/shop/*', $decision->matchedRule);
     }
 
@@ -148,7 +148,7 @@ final class CacheabilityClassifierTest extends TestCase
         );
 
         self::assertFalse($decision->cacheable);
-        self::assertSame(BypassReason::BYPASS_RULE_MATCH, $decision->reason);
+        self::assertSame(BypassReason::BYPASS_PLUGIN_SIGNATURE, $decision->reason);
         self::assertSame('news_pi1', $decision->matchedRule);
     }
 
@@ -163,7 +163,7 @@ final class CacheabilityClassifierTest extends TestCase
         );
 
         self::assertFalse($decision->cacheable);
-        self::assertSame(BypassReason::BYPASS_RULE_MATCH, $decision->reason);
+        self::assertSame(BypassReason::BYPASS_CTYPE, $decision->reason);
         self::assertSame('list', $decision->matchedRule);
     }
 

@@ -31,7 +31,7 @@ final class BypassRuleMatchTest extends FunctionalTestCase
         );
 
         self::assertFalse($decision->cacheable);
-        self::assertSame(BypassReason::BYPASS_RULE_MATCH, $decision->reason);
+        self::assertSame(BypassReason::BYPASS_PATH, $decision->reason);
         self::assertSame('/preview/*', $decision->matchedRule);
     }
 

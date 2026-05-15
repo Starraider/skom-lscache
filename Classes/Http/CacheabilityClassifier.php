@@ -57,18 +57,18 @@ final readonly class CacheabilityClassifier implements CacheabilityClassifierInt
 
             $matchedPathRule = $this->firstMatchingPathRule($this->getBypassList($siteSettings, 'paths'), $request->getUri()->getPath());
             if ($matchedPathRule !== null) {
-                return CacheabilityDecision::bypass(BypassReason::BYPASS_RULE_MATCH, $matchedPathRule);
+                return CacheabilityDecision::bypass(BypassReason::BYPASS_PATH, $matchedPathRule);
             }
 
             $inventory = $this->pageContentInventoryProvider->getForRequest($request);
             $matchedPluginRule = $this->firstMatchingRule($this->getBypassList($siteSettings, 'pluginSignatures'), $inventory->pluginSignatures);
             if ($matchedPluginRule !== null) {
-                return CacheabilityDecision::bypass(BypassReason::BYPASS_RULE_MATCH, $matchedPluginRule);
+                return CacheabilityDecision::bypass(BypassReason::BYPASS_PLUGIN_SIGNATURE, $matchedPluginRule);
             }
 
             $matchedCTypeRule = $this->firstMatchingRule($this->getBypassList($siteSettings, 'ctypes'), $inventory->ctypes);
             if ($matchedCTypeRule !== null) {
-                return CacheabilityDecision::bypass(BypassReason::BYPASS_RULE_MATCH, $matchedCTypeRule);
+                return CacheabilityDecision::bypass(BypassReason::BYPASS_CTYPE, $matchedCTypeRule);
             }
         } catch (MissingRequestContext $exception) {
             return CacheabilityDecision::bypass(BypassReason::MISSING_REQUEST_CONTEXT);

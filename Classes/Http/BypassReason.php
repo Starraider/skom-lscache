@@ -15,7 +15,6 @@ enum BypassReason: string
     case RESPONSE_SET_COOKIE = 'response_set_cookie';
     case REQUEST_METHOD = 'request_method';
     case MISSING_REQUEST_CONTEXT = 'missing_request_context';
-    case BYPASS_RULE_MATCH = 'BYPASS_RULE_MATCH';
     case BYPASS_PATH = 'bypass_path';
     case BYPASS_PLUGIN_SIGNATURE = 'bypass_plugin_signature';
     case BYPASS_CTYPE = 'bypass_ctype';

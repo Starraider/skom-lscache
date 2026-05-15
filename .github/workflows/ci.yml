@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality-gates:
+    name: Quality Gates (PHP ${{ matrix.php-version }} / TYPO3 ${{ matrix.typo3-version }} / Slot ${{ matrix.matrix-slot }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php-version: '8.2'
+            typo3-version: '14.3.0'
+            matrix-slot: floor
+          - php-version: '8.2'
+            typo3-version: '14.3.1'
+            matrix-slot: current
+          - php-version: '8.2'
+            typo3-version: '^14.3'
+            matrix-slot: rolling-range
+          - php-version: '8.3'
+            typo3-version: '14.3.0'
+            matrix-slot: floor
+          - php-version: '8.3'
+            typo3-version: '14.3.1'
+            matrix-slot: current
+          - php-version: '8.3'
+            typo3-version: '^14.3'
+            matrix-slot: rolling-range
+          - php-version: '8.4'
+            typo3-version: '14.3.0'
+            matrix-slot: floor
+          - php-version: '8.4'
+            typo3-version: '14.3.1'
+            matrix-slot: current
+          - php-version: '8.4'
+            typo3-version: '^14.3'
+            matrix-slot: rolling-range
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer Downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.typo3-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-
+            ${{ runner.os }}-composer-
+
+      - name: Set Composer platform PHP for this matrix cell
+        run: composer config platform.php ${{ matrix.php-version }}
+
+      - name: Pin TYPO3 CMS package set for this matrix cell
+        env:
+          TYPO3_VERSION: ${{ matrix.typo3-version }}
+        run: |
+          TYPO3_CONSTRAINTS="$(php -r '$composer = json_decode(file_get_contents("composer.json"), true, 512, JSON_THROW_ON_ERROR); $version = getenv("TYPO3_VERSION"); $packages = array_unique(array_merge(array_keys($composer["require"] ?? []), array_keys($composer["require-dev"] ?? []))); $constraints = []; foreach ($packages as $package) { if (str_starts_with($package, "typo3/cms-")) { $constraints[] = $package . ":" . $version; } } echo implode(" ", $constraints);')"
+          if [ -z "$TYPO3_CONSTRAINTS" ]; then
+            echo "No TYPO3 CMS packages found in composer.json"
+            exit 1
+          fi
+          composer require --no-update $TYPO3_CONSTRAINTS
+
+      - name: Install dependencies
+        run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies
+
+      - name: Composer normalize gate
+        run: composer ci:composer:normalize
+
+      - name: Install docs validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck yamllint
+
+      - name: Fractor gate
+        run: composer ci:fractor:process
+
+      - name: Rector gate
+        run: composer ci:rector:process
+
+      - name: Documentation gate
+        run: composer ci:docs:validate
+
+      - name: PHPStan gate
+        run: composer ci:phpstan
+
+      - name: PHPUnit unit gate
+        run: composer ci:phpunit
+
+      - name: PHPUnit functional gate
+        run: composer ci:phpunit:functional

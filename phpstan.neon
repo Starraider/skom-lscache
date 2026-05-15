@@ -1,0 +1,11 @@
+includes:
+    - vendor/saschaegerer/phpstan-typo3/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - Classes
+        - Tests
+    ignoreErrors:
+        -
+            identifier: missingType.iterableValue

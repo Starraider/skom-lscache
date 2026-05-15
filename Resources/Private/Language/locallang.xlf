@@ -106,7 +106,6 @@
             <trans-unit id="pageStatus.reason.response_set_cookie"><source>Response sets cookies</source></trans-unit>
             <trans-unit id="pageStatus.reason.request_method"><source>Request method is not GET/HEAD</source></trans-unit>
             <trans-unit id="pageStatus.reason.missing_request_context"><source>Missing request context attributes</source></trans-unit>
-            <trans-unit id="pageStatus.reason.BYPASS_RULE_MATCH"><source>Matched bypass rule</source></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_path"><source>Matched bypass path rule</source></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_plugin_signature"><source>Matched bypass plugin signature</source></trans-unit>
             <trans-unit id="pageStatus.reason.bypass_ctype"><source>Matched bypass CType rule</source></trans-unit>
