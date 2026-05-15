@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Skom\Lscache\Tests\Unit\Http;
 
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Skom\Lscache\Http\BypassReason;
@@ -21,7 +20,6 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\SiteSettings;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 
-#[AllowMockObjectsWithoutExpectations]
 final class CacheabilityClassifierTest extends TestCase
 {
     #[Test]
