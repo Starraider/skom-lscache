@@ -80,6 +80,7 @@ jobs:
             exit 1
           fi
           composer require --no-update $TYPO3_CONSTRAINTS
+          composer normalize
 
       - name: Install dependencies
         run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies

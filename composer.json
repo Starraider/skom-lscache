@@ -19,7 +19,7 @@
         "a9f/typo3-fractor": "^0.5.10",
         "ergebnis/composer-normalize": "^2.52",
         "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^12.5",
+        "phpunit/phpunit": "^11.5 || ^12.5",
         "saschaegerer/phpstan-typo3": "^3.0",
         "ssch/typo3-rector": "^3.14",
         "typo3/cms-backend": "^14.3",
