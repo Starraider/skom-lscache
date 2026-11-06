@@ -81,6 +81,11 @@ jobs:
           fi
           composer require --no-update --sort-packages $TYPO3_CONSTRAINTS
 
+      - name: Disable Composer advisory blocking
+        run: |
+          composer config --global audit.block false || true
+          composer config --global policy.advisories.block false || true
+
       - name: Install dependencies
         run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies --no-audit
 

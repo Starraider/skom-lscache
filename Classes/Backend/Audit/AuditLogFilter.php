@@ -11,13 +11,6 @@ use DateTimeImmutable;
  */
 final readonly class AuditLogFilter
 {
-    private const DATE_PRESETS = [
-        'lastHour',
-        'last24h',
-        'last7d',
-        'custom',
-    ];
-
     /**
      * @var list<int>
      */
