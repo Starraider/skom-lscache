@@ -6,6 +6,7 @@ parameters:
     paths:
         - Classes
         - Tests
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
             identifier: missingType.iterableValue
