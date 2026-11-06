@@ -212,19 +212,13 @@ final readonly class AuditLogFilter
     {
         $normalized = strtolower(trim($value));
 
-        $mapped = match ($normalized) {
+        return match ($normalized) {
             'lasthour', 'last_hour', 'last-hour' => 'lastHour',
             'last24h', 'last_24h', 'last-24h' => 'last24h',
             'last7d', 'last_7d', 'last-7d' => 'last7d',
             'custom' => 'custom',
             default => 'last24h',
         };
-
-        if (!in_array($mapped, self::DATE_PRESETS, true)) {
-            return 'last24h';
-        }
-
-        return $mapped;
     }
 
     private static function normalizePositiveInteger(mixed $value, int $default): int

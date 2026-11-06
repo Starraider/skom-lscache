@@ -82,7 +82,7 @@ jobs:
           composer require --no-update --sort-packages $TYPO3_CONSTRAINTS
 
       - name: Install dependencies
-        run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies
+        run: composer update --no-interaction --prefer-dist --optimize-autoloader --with-all-dependencies --no-audit
 
       - name: Normalize matrix Composer metadata
         run: composer normalize
