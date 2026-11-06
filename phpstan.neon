@@ -6,6 +6,10 @@ parameters:
     paths:
         - Classes
         - Tests
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -
             identifier: missingType.iterableValue
+        -
+            message: '#Parameter \#1 \$handler of static method GuzzleHttp\\HandlerStack.* expects.*#'
+            path: Tests/Unit/Backend/Probe/CacheProbeClientTest.php
