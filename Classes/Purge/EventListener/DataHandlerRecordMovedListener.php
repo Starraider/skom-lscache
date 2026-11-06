@@ -27,9 +27,9 @@ final readonly class DataHandlerRecordMovedListener
     /**
      * @param int|string $id
      * @param mixed $value
-     * @param array<string, mixed> $pasteUpdate
+     * @param array<string, mixed>|bool $pasteUpdate
      */
-    public function processCmdmap_preProcess(string $command, string $table, $id, &$value, DataHandler $dataHandler, array &$pasteUpdate): void
+    public function processCmdmap_preProcess(string $command, string $table, $id, &$value, DataHandler $dataHandler, array|bool &$pasteUpdate = false): void
     {
         if ($command !== 'move') {
             return;
